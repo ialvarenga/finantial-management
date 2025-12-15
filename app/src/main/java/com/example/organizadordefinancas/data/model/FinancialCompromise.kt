@@ -15,6 +15,10 @@ enum class CompromiseCategory {
     EDUCATION,  // Educação
     HEALTH,     // Saúde
     TRANSPORT,  // Transporte
+    TECHNOLOGY,  // Tecnologia
+    FOOD,       // Alimentação
+    COMPANY,    // Empresa
+    HOUSEHOLD,   // Casa
     OTHER       // Outros
 }
 

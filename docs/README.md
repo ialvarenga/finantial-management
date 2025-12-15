@@ -169,6 +169,10 @@ app/src/main/java/com/example/organizadordefinancas/
 - `EDUCATION` - Educação
 - `HEALTH` - Saúde
 - `TRANSPORT` - Transporte
+- `TECHNOLOGY` - Tecnologia
+- `FOOD` - Alimentação
+- `COMPANY` - Empresa
+- `HOUSEHOLD` - Casa
 - `OTHER` - Outros
 
 ### Income (Receita)

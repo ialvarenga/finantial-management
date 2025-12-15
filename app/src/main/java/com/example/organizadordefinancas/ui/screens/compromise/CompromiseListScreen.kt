@@ -1,6 +1,5 @@
 package com.example.organizadordefinancas.ui.screens.compromise
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -283,7 +282,7 @@ private fun CompromiseItem(
 
 fun getCategoryIcon(category: CompromiseCategory): ImageVector {
     return when (category) {
-        CompromiseCategory.RENT -> Icons.Default.Home
+        CompromiseCategory.RENT -> Icons.Default.Bathtub
         CompromiseCategory.ENERGY -> Icons.Default.Bolt
         CompromiseCategory.WATER -> Icons.Default.WaterDrop
         CompromiseCategory.INTERNET -> Icons.Default.Wifi
@@ -294,6 +293,10 @@ fun getCategoryIcon(category: CompromiseCategory): ImageVector {
         CompromiseCategory.EDUCATION -> Icons.Default.School
         CompromiseCategory.HEALTH -> Icons.Default.LocalHospital
         CompromiseCategory.TRANSPORT -> Icons.Default.DirectionsCar
+        CompromiseCategory.COMPANY -> Icons.Default.Business
+        CompromiseCategory.HOUSEHOLD -> Icons.Default.Kitchen
+        CompromiseCategory.TECHNOLOGY -> Icons.Default.Computer
+        CompromiseCategory.FOOD -> Icons.Default.Restaurant
         CompromiseCategory.OTHER -> Icons.Default.Receipt
     }
 }
@@ -311,6 +314,10 @@ fun getCategoryColor(category: CompromiseCategory): Color {
         CompromiseCategory.EDUCATION -> Color(0xFF3F51B5)
         CompromiseCategory.HEALTH -> Color(0xFFF44336)
         CompromiseCategory.TRANSPORT -> Color(0xFF00BCD4)
+        CompromiseCategory.COMPANY -> Color(0xFF8BC34A)
+        CompromiseCategory.HOUSEHOLD -> Color(0xFFFF9800)
+        CompromiseCategory.TECHNOLOGY -> Color(0xFF673AB7)
+        CompromiseCategory.FOOD -> Color(0xFFCDDC39)
         CompromiseCategory.OTHER -> Color(0xFF9E9E9E)
     }
 }
@@ -328,6 +335,10 @@ fun getCategoryName(category: CompromiseCategory): String {
         CompromiseCategory.EDUCATION -> "Educação"
         CompromiseCategory.HEALTH -> "Saúde"
         CompromiseCategory.TRANSPORT -> "Transporte"
+        CompromiseCategory.TECHNOLOGY -> "Tecnologia"
+        CompromiseCategory.FOOD -> "Alimentação"
+        CompromiseCategory.COMPANY -> "Empresa"
+        CompromiseCategory.HOUSEHOLD -> "Casa"
         CompromiseCategory.OTHER -> "Outros"
     }
 }
