@@ -176,7 +176,7 @@ fun HomeScreen(
 
                 val today = LocalDate.now().dayOfMonth
                 val upcomingCompromises = compromises
-                    .filter { !it.isPaid }
+                    .filter { !it.isPaid && it.linkedCreditCardId == null }
                     .sortedBy {
                         val daysUntil = if (it.dueDay >= today) it.dueDay - today else 30 - today + it.dueDay
                         daysUntil
