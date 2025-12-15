@@ -22,17 +22,20 @@ import com.example.organizadordefinancas.data.model.CreditCardItem
 import com.example.organizadordefinancas.ui.components.DeleteConfirmationDialog
 import com.example.organizadordefinancas.ui.components.formatCurrency
 import com.example.organizadordefinancas.ui.viewmodel.CreditCardViewModel
+import com.example.organizadordefinancas.ui.viewmodel.FinancialCompromiseViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CreditCardListScreen(
     viewModel: CreditCardViewModel,
+    compromiseViewModel: FinancialCompromiseViewModel,
     onNavigateToDetail: (Long) -> Unit,
     onNavigateToAddEdit: (Long?) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val creditCards by viewModel.allCreditCards.collectAsState()
     val allItems by viewModel.allItems.collectAsState()
+    val allCompromises by compromiseViewModel.allCompromises.collectAsState()
     var cardToDelete by remember { mutableStateOf<CreditCard?>(null) }
 
     Scaffold(
@@ -91,7 +94,9 @@ fun CreditCardListScreen(
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 items(creditCards) { card ->
-                    val cardTotal = allItems.filter { it.cardId == card.id }.sumOf { it.amount }
+                    val itemsTotal = allItems.filter { it.cardId == card.id }.sumOf { it.amount }
+                    val compromisesTotal = allCompromises.filter { it.linkedCreditCardId == card.id }.sumOf { it.amount }
+                    val cardTotal = itemsTotal + compromisesTotal
                     CreditCardItem(
                         card = card,
                         total = cardTotal,

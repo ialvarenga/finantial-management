@@ -52,6 +52,7 @@ fun FinanceNavHost(
         composable(Screen.CreditCards.route) {
             CreditCardListScreen(
                 viewModel = creditCardViewModel,
+                compromiseViewModel = compromiseViewModel,
                 onNavigateToDetail = { cardId ->
                     navController.navigate(Screen.CreditCardDetail.createRoute(cardId))
                 },
