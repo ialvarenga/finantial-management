@@ -48,6 +48,9 @@ fun FinanceApp(application: FinanceApplication) {
     val compromiseViewModel: FinancialCompromiseViewModel = viewModel(
         factory = FinancialCompromiseViewModelFactory(application.financialCompromiseRepository)
     )
+    val incomeViewModel: IncomeViewModel = viewModel(
+        factory = IncomeViewModelFactory(application.incomeRepository)
+    )
 
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
@@ -89,6 +92,7 @@ fun FinanceApp(application: FinanceApplication) {
             creditCardViewModel = creditCardViewModel,
             bankViewModel = bankViewModel,
             compromiseViewModel = compromiseViewModel,
+            incomeViewModel = incomeViewModel,
             modifier = Modifier.padding(innerPadding)
         )
     }

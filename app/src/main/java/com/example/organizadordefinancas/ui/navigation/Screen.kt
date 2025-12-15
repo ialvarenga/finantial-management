@@ -2,6 +2,7 @@ package com.example.organizadordefinancas.ui.navigation
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountBalance
+import androidx.compose.material.icons.filled.AttachMoney
 import androidx.compose.material.icons.filled.CreditCard
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Receipt
@@ -30,12 +31,17 @@ sealed class Screen(val route: String, val title: String, val icon: ImageVector?
     object AddEditCompromise : Screen("add_edit_compromise?compromiseId={compromiseId}", "Conta Fixa") {
         fun createRoute(compromiseId: Long? = null) = if (compromiseId != null) "add_edit_compromise?compromiseId=$compromiseId" else "add_edit_compromise"
     }
+    object Incomes : Screen("incomes", "Receitas", Icons.Default.AttachMoney)
+    object AddEditIncome : Screen("add_edit_income?incomeId={incomeId}", "Receita") {
+        fun createRoute(incomeId: Long? = null) = if (incomeId != null) "add_edit_income?incomeId=$incomeId" else "add_edit_income"
+    }
 }
 
 val bottomNavItems = listOf(
     Screen.Home,
     Screen.CreditCards,
     Screen.Banks,
-    Screen.Compromises
+    Screen.Compromises,
+    Screen.Incomes
 )
 

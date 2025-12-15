@@ -8,19 +8,22 @@ import com.example.organizadordefinancas.data.dao.BankDao
 import com.example.organizadordefinancas.data.dao.CreditCardDao
 import com.example.organizadordefinancas.data.dao.CreditCardItemDao
 import com.example.organizadordefinancas.data.dao.FinancialCompromiseDao
+import com.example.organizadordefinancas.data.dao.IncomeDao
 import com.example.organizadordefinancas.data.model.Bank
 import com.example.organizadordefinancas.data.model.CreditCard
 import com.example.organizadordefinancas.data.model.CreditCardItem
 import com.example.organizadordefinancas.data.model.FinancialCompromise
+import com.example.organizadordefinancas.data.model.Income
 
 @Database(
     entities = [
         CreditCard::class,
         CreditCardItem::class,
         Bank::class,
-        FinancialCompromise::class
+        FinancialCompromise::class,
+        Income::class
     ],
-    version = 1,
+    version = 2,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -28,6 +31,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun creditCardItemDao(): CreditCardItemDao
     abstract fun bankDao(): BankDao
     abstract fun financialCompromiseDao(): FinancialCompromiseDao
+    abstract fun incomeDao(): IncomeDao
 
     companion object {
         @Volatile
@@ -39,7 +43,9 @@ abstract class AppDatabase : RoomDatabase() {
                     context.applicationContext,
                     AppDatabase::class.java,
                     "finance_database"
-                ).build()
+                )
+                    .fallbackToDestructiveMigration()
+                    .build()
                 INSTANCE = instance
                 instance
             }

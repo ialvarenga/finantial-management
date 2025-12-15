@@ -17,9 +17,12 @@ import com.example.organizadordefinancas.ui.screens.creditcard.CreditCardDetailS
 import com.example.organizadordefinancas.ui.screens.creditcard.CreditCardListScreen
 import com.example.organizadordefinancas.ui.screens.creditcard.ImportStatementScreen
 import com.example.organizadordefinancas.ui.screens.home.HomeScreen
+import com.example.organizadordefinancas.ui.screens.income.AddEditIncomeScreen
+import com.example.organizadordefinancas.ui.screens.income.IncomeListScreen
 import com.example.organizadordefinancas.ui.viewmodel.BankViewModel
 import com.example.organizadordefinancas.ui.viewmodel.CreditCardViewModel
 import com.example.organizadordefinancas.ui.viewmodel.FinancialCompromiseViewModel
+import com.example.organizadordefinancas.ui.viewmodel.IncomeViewModel
 
 @Composable
 fun FinanceNavHost(
@@ -27,6 +30,7 @@ fun FinanceNavHost(
     creditCardViewModel: CreditCardViewModel,
     bankViewModel: BankViewModel,
     compromiseViewModel: FinancialCompromiseViewModel,
+    incomeViewModel: IncomeViewModel,
     modifier: Modifier = Modifier
 ) {
     NavHost(
@@ -168,6 +172,33 @@ fun FinanceNavHost(
             AddEditCompromiseScreen(
                 compromiseId = compromiseId,
                 viewModel = compromiseViewModel,
+                onNavigateBack = { navController.popBackStack() }
+            )
+        }
+
+        // Incomes
+        composable(Screen.Incomes.route) {
+            IncomeListScreen(
+                viewModel = incomeViewModel,
+                onNavigateToAddEdit = { incomeId ->
+                    navController.navigate(Screen.AddEditIncome.createRoute(incomeId))
+                }
+            )
+        }
+
+        composable(
+            route = Screen.AddEditIncome.route,
+            arguments = listOf(
+                navArgument("incomeId") {
+                    type = NavType.LongType
+                    defaultValue = -1L
+                }
+            )
+        ) { backStackEntry ->
+            val incomeId = backStackEntry.arguments?.getLong("incomeId")?.takeIf { it != -1L }
+            AddEditIncomeScreen(
+                incomeId = incomeId,
+                viewModel = incomeViewModel,
                 onNavigateBack = { navController.popBackStack() }
             )
         }
