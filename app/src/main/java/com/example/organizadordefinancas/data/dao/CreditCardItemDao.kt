@@ -21,6 +21,7 @@ interface CreditCardItemDao {
     @Query("SELECT * FROM credit_card_items WHERE id = :id")
     fun getItemById(id: Long): Flow<CreditCardItem?>
 
+
     @Query("SELECT SUM(amount) FROM credit_card_items WHERE cardId = :cardId")
     fun getTotalByCardId(cardId: Long): Flow<Double?>
 

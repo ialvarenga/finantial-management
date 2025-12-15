@@ -111,6 +111,7 @@ fun FinanceNavHost(
             AddCreditCardItemScreen(
                 cardId = cardId,
                 viewModel = creditCardViewModel,
+                compromiseViewModel = compromiseViewModel,
                 onNavigateBack = { navController.popBackStack() }
             )
         }
@@ -123,6 +124,7 @@ fun FinanceNavHost(
             EditCreditCardItemScreen(
                 itemId = itemId,
                 viewModel = creditCardViewModel,
+                compromiseViewModel = compromiseViewModel,
                 onNavigateBack = { navController.popBackStack() }
             )
         }
@@ -170,6 +172,7 @@ fun FinanceNavHost(
         composable(Screen.Compromises.route) {
             CompromiseListScreen(
                 viewModel = compromiseViewModel,
+                creditCardViewModel = creditCardViewModel,
                 onNavigateToAddEdit = { compromiseId ->
                     navController.navigate(Screen.AddEditCompromise.createRoute(compromiseId))
                 }

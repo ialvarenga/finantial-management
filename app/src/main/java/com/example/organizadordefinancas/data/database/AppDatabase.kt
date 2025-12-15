@@ -23,7 +23,7 @@ import com.example.organizadordefinancas.data.model.Income
         FinancialCompromise::class,
         Income::class
     ],
-    version = 3,
+    version = 5,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {

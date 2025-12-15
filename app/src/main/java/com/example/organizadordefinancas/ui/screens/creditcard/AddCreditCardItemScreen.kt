@@ -6,13 +6,18 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Repeat
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import com.example.organizadordefinancas.data.model.CompromiseCategory
 import com.example.organizadordefinancas.data.model.CreditCardItem
+import com.example.organizadordefinancas.data.model.FinancialCompromise
 import com.example.organizadordefinancas.ui.viewmodel.CreditCardViewModel
+import com.example.organizadordefinancas.ui.viewmodel.FinancialCompromiseViewModel
 
 val itemCategories = listOf(
     "Alimentação",
@@ -32,6 +37,7 @@ val itemCategories = listOf(
 fun AddCreditCardItemScreen(
     cardId: Long,
     viewModel: CreditCardViewModel,
+    compromiseViewModel: FinancialCompromiseViewModel,
     onNavigateBack: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -40,6 +46,7 @@ fun AddCreditCardItemScreen(
     var installments by remember { mutableStateOf("1") }
     var selectedCategory by remember { mutableStateOf(itemCategories.last()) }
     var expandedCategory by remember { mutableStateOf(false) }
+    var isRecurring by remember { mutableStateOf(false) }
 
     val isFormValid = description.isNotBlank() &&
         amount.toDoubleOrNull() != null &&
@@ -88,21 +95,69 @@ fun AddCreditCardItemScreen(
                 prefix = { Text("R$ ") }
             )
 
-            OutlinedTextField(
-                value = installments,
-                onValueChange = {
-                    val filtered = it.filter { c -> c.isDigit() }
-                    if (filtered.isEmpty() || (filtered.toIntOrNull() ?: 0) <= 48) {
-                        installments = filtered
-                    }
-                },
-                label = { Text("Parcelas") },
-                placeholder = { Text("1") },
+            // Recurring bill option
+            Card(
                 modifier = Modifier.fillMaxWidth(),
-                singleLine = true,
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                supportingText = { Text("Deixe 1 para compra à vista") }
-            )
+                colors = CardDefaults.cardColors(
+                    containerColor = if (isRecurring) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant
+                )
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Repeat,
+                            contentDescription = null,
+                            tint = if (isRecurring) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline
+                        )
+                        Column {
+                            Text(
+                                text = "Conta Fixa Recorrente",
+                                style = MaterialTheme.typography.bodyLarge
+                            )
+                            Text(
+                                text = "Repete todo mês automaticamente",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.outline
+                            )
+                        }
+                    }
+                    Switch(
+                        checked = isRecurring,
+                        onCheckedChange = {
+                            isRecurring = it
+                            if (it) installments = "1"
+                        }
+                    )
+                }
+            }
+
+            // Only show installments if not recurring
+            if (!isRecurring) {
+                OutlinedTextField(
+                    value = installments,
+                    onValueChange = {
+                        val filtered = it.filter { c -> c.isDigit() }
+                        if (filtered.isEmpty() || (filtered.toIntOrNull() ?: 0) <= 48) {
+                            installments = filtered
+                        }
+                    },
+                    label = { Text("Parcelas") },
+                    placeholder = { Text("1") },
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    supportingText = { Text("Deixe 1 para compra à vista") }
+                )
+            }
 
             ExposedDropdownMenuBox(
                 expanded = expandedCategory,
@@ -138,7 +193,7 @@ fun AddCreditCardItemScreen(
             // Preview of installment value
             val totalAmount = amount.toDoubleOrNull() ?: 0.0
             val numInstallments = installments.toIntOrNull()?.coerceAtLeast(1) ?: 1
-            if (totalAmount > 0 && numInstallments > 1) {
+            if (totalAmount > 0 && numInstallments > 1 && !isRecurring) {
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     colors = CardDefaults.cardColors(
@@ -165,22 +220,35 @@ fun AddCreditCardItemScreen(
             Button(
                 onClick = {
                     val totalAmount = amount.toDoubleOrNull() ?: 0.0
-                    val numInstallments = installments.toIntOrNull()?.coerceAtLeast(1) ?: 1
 
-                    val item = CreditCardItem(
-                        cardId = cardId,
-                        description = description,
-                        amount = totalAmount, // Total amount - will be divided in repository
-                        purchaseDate = System.currentTimeMillis(),
-                        installments = numInstallments,
-                        currentInstallment = 1,
-                        category = selectedCategory
-                    )
-
-                    if (numInstallments > 1) {
-                        viewModel.insertItemWithInstallments(item)
+                    if (isRecurring) {
+                        // Create a FinancialCompromise linked to this credit card
+                        val compromise = FinancialCompromise(
+                            name = description,
+                            amount = totalAmount,
+                            dueDay = 0, // Not relevant when linked to credit card
+                            category = CompromiseCategory.OTHER,
+                            linkedCreditCardId = cardId
+                        )
+                        compromiseViewModel.insertCompromise(compromise)
                     } else {
-                        viewModel.insertItem(item)
+                        // Create a regular credit card item
+                        val numInstallments = installments.toIntOrNull()?.coerceAtLeast(1) ?: 1
+                        val item = CreditCardItem(
+                            cardId = cardId,
+                            description = description,
+                            amount = totalAmount,
+                            purchaseDate = System.currentTimeMillis(),
+                            installments = numInstallments,
+                            currentInstallment = 1,
+                            category = selectedCategory
+                        )
+
+                        if (numInstallments > 1) {
+                            viewModel.insertItemWithInstallments(item)
+                        } else {
+                            viewModel.insertItem(item)
+                        }
                     }
                     onNavigateBack()
                 },
@@ -189,7 +257,7 @@ fun AddCreditCardItemScreen(
                     .height(56.dp),
                 enabled = isFormValid
             ) {
-                Text("Adicionar Item")
+                Text(if (isRecurring) "Adicionar Conta Fixa" else "Adicionar Item")
             }
         }
     }

@@ -22,6 +22,7 @@ class CreditCardRepository(
 
     fun getItemById(itemId: Long): Flow<CreditCardItem?> = creditCardItemDao.getItemById(itemId)
 
+
     fun getTotalByCardId(cardId: Long): Flow<Double?> = creditCardItemDao.getTotalByCardId(cardId)
 
     suspend fun insertCreditCard(creditCard: CreditCard): Long =

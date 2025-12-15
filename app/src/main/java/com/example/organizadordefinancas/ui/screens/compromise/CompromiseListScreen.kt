@@ -20,12 +20,14 @@ import com.example.organizadordefinancas.data.model.CompromiseCategory
 import com.example.organizadordefinancas.data.model.FinancialCompromise
 import com.example.organizadordefinancas.ui.components.DeleteConfirmationDialog
 import com.example.organizadordefinancas.ui.components.formatCurrency
+import com.example.organizadordefinancas.ui.viewmodel.CreditCardViewModel
 import com.example.organizadordefinancas.ui.viewmodel.FinancialCompromiseViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CompromiseListScreen(
     viewModel: FinancialCompromiseViewModel,
+    creditCardViewModel: CreditCardViewModel,
     onNavigateToAddEdit: (Long?) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -33,8 +35,13 @@ fun CompromiseListScreen(
     val totalCompromises by viewModel.totalMonthlyCompromises.collectAsState()
     var compromiseToDelete by remember { mutableStateOf<FinancialCompromise?>(null) }
 
-    val paidCount = compromises.count { it.isPaid }
-    val totalCount = compromises.size
+    // Filter compromises by linked status
+    val nonLinkedCompromises = compromises.filter { it.linkedCreditCardId == null }
+    val linkedCompromises = compromises.filter { it.linkedCreditCardId != null }
+
+    val paidCount = nonLinkedCompromises.count { it.isPaid }
+    val totalCount = nonLinkedCompromises.size
+
 
     Scaffold(
         topBar = {
@@ -136,14 +143,48 @@ fun CompromiseListScreen(
                         .padding(horizontal = 16.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    items(compromises) { compromise ->
-                        CompromiseItem(
-                            compromise = compromise,
-                            onTogglePaid = { viewModel.togglePaidStatus(compromise) },
-                            onEdit = { onNavigateToAddEdit(compromise.id) },
-                            onDelete = { compromiseToDelete = compromise }
-                        )
+                    // Regular compromises (not linked to credit cards)
+                    if (nonLinkedCompromises.isNotEmpty()) {
+                        item {
+                            Text(
+                                text = "Contas Fixas",
+                                style = MaterialTheme.typography.labelLarge,
+                                color = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.padding(vertical = 4.dp)
+                            )
+                        }
+                        items(nonLinkedCompromises) { compromise ->
+                            CompromiseItem(
+                                compromise = compromise,
+                                onTogglePaid = { viewModel.togglePaidStatus(compromise) },
+                                onEdit = { onNavigateToAddEdit(compromise.id) },
+                                onDelete = { compromiseToDelete = compromise }
+                            )
+                        }
                     }
+
+                    // Compromises linked to credit cards
+                    if (linkedCompromises.isNotEmpty()) {
+                        item {
+                            if (nonLinkedCompromises.isNotEmpty()) {
+                                HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+                            }
+                            Text(
+                                text = "Vinculadas a Cartões de Crédito",
+                                style = MaterialTheme.typography.labelLarge,
+                                color = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.padding(vertical = 4.dp)
+                            )
+                        }
+                        items(linkedCompromises) { compromise ->
+                            LinkedCompromiseItem(
+                                compromise = compromise,
+                                onEdit = { onNavigateToAddEdit(compromise.id) },
+                                onDelete = { compromiseToDelete = compromise }
+                            )
+                        }
+                    }
+
                     item {
                         Spacer(modifier = Modifier.height(80.dp))
                     }
@@ -291,3 +332,81 @@ fun getCategoryName(category: CompromiseCategory): String {
     }
 }
 
+@Composable
+private fun LinkedCompromiseItem(
+    compromise: FinancialCompromise,
+    onEdit: () -> Unit,
+    onDelete: () -> Unit
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onEdit),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.secondaryContainer
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(12.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // Category icon
+            Icon(
+                imageVector = getCategoryIcon(compromise.category),
+                contentDescription = null,
+                tint = getCategoryColor(compromise.category),
+                modifier = Modifier.size(32.dp)
+            )
+
+            Spacer(modifier = Modifier.width(12.dp))
+
+            Column(modifier = Modifier.weight(1f)) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.CreditCard,
+                        contentDescription = "Vinculado a cartão",
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Text(
+                        text = compromise.name,
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Medium
+                    )
+                }
+                Text(
+                    text = "${getCategoryName(compromise.category)} • No cartão de crédito",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.outline
+                )
+            }
+
+            Column(
+                horizontalAlignment = Alignment.End
+            ) {
+                Text(
+                    text = formatCurrency(compromise.amount),
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFFE91E63)
+                )
+            }
+
+            IconButton(onClick = onDelete) {
+                Icon(
+                    imageVector = Icons.Default.Delete,
+                    contentDescription = "Excluir",
+                    tint = MaterialTheme.colorScheme.error,
+                    modifier = Modifier.size(20.dp)
+                )
+            }
+        }
+    }
+}

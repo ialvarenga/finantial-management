@@ -22,6 +22,7 @@ class CreditCardViewModel(private val repository: CreditCardRepository) : ViewMo
     val allItems: StateFlow<List<CreditCardItem>> = repository.getAllItems()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
+
     private val _selectedCard = MutableStateFlow<CreditCard?>(null)
     val selectedCard: StateFlow<CreditCard?> = _selectedCard.asStateFlow()
 
