@@ -61,6 +61,9 @@ fun FinanceApp(application: FinanceApplication) {
             application.bankRepository
         )
     )
+    val analyticsViewModel: AnalyticsViewModel = viewModel(
+        factory = AnalyticsViewModelFactory(application.analyticsRepository)
+    )
 
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
@@ -95,16 +98,18 @@ fun FinanceApp(application: FinanceApplication) {
                     }
                 }
             }
+        },
+        content = { innerPadding ->
+            FinanceNavHost(
+                navController = navController,
+                creditCardViewModel = creditCardViewModel,
+                bankViewModel = bankViewModel,
+                compromiseViewModel = compromiseViewModel,
+                incomeViewModel = incomeViewModel,
+                notificationViewModel = notificationViewModel,
+                analyticsViewModel = analyticsViewModel,
+                modifier = Modifier.padding(innerPadding)
+            )
         }
-    ) { innerPadding ->
-        FinanceNavHost(
-            navController = navController,
-            creditCardViewModel = creditCardViewModel,
-            bankViewModel = bankViewModel,
-            compromiseViewModel = compromiseViewModel,
-            incomeViewModel = incomeViewModel,
-            notificationViewModel = notificationViewModel,
-            modifier = Modifier.padding(innerPadding)
-        )
-    }
+    )
 }

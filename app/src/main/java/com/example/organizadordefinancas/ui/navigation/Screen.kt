@@ -2,6 +2,7 @@ package com.example.organizadordefinancas.ui.navigation
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountBalance
+import androidx.compose.material.icons.filled.Analytics
 import androidx.compose.material.icons.filled.AttachMoney
 import androidx.compose.material.icons.filled.CreditCard
 import androidx.compose.material.icons.filled.Home
@@ -40,6 +41,8 @@ sealed class Screen(val route: String, val title: String, val icon: ImageVector?
     object AddEditIncome : Screen("add_edit_income?incomeId={incomeId}", "Receita") {
         fun createRoute(incomeId: Long? = null) = if (incomeId != null) "add_edit_income?incomeId=$incomeId" else "add_edit_income"
     }
+    // Analytics screen
+    object Analytics : Screen("analytics", "Análises", Icons.Default.Analytics)
     // Notification screens
     object PendingNotifications : Screen("pending_notifications", "Transações Pendentes", Icons.Default.Notifications)
     object NotificationSettings : Screen("notification_settings", "Configurações de Notificações", Icons.Default.Settings)
@@ -49,6 +52,7 @@ val bottomNavItems = listOf(
     Screen.Home,
     Screen.CreditCards,
     Screen.Banks,
+    Screen.Analytics,
     Screen.Compromises,
     Screen.Incomes
 )

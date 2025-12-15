@@ -7,6 +7,7 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import com.example.organizadordefinancas.ui.screens.analytics.AnalyticsScreen
 import com.example.organizadordefinancas.ui.screens.bank.AddEditBankScreen
 import com.example.organizadordefinancas.ui.screens.bank.BankListScreen
 import com.example.organizadordefinancas.ui.screens.compromise.AddEditCompromiseScreen
@@ -22,6 +23,7 @@ import com.example.organizadordefinancas.ui.screens.income.AddEditIncomeScreen
 import com.example.organizadordefinancas.ui.screens.income.IncomeListScreen
 import com.example.organizadordefinancas.ui.screens.notification.NotificationSettingsScreen
 import com.example.organizadordefinancas.ui.screens.notification.PendingNotificationsScreen
+import com.example.organizadordefinancas.ui.viewmodel.AnalyticsViewModel
 import com.example.organizadordefinancas.ui.viewmodel.BankViewModel
 import com.example.organizadordefinancas.ui.viewmodel.CreditCardViewModel
 import com.example.organizadordefinancas.ui.viewmodel.FinancialCompromiseViewModel
@@ -36,6 +38,7 @@ fun FinanceNavHost(
     compromiseViewModel: FinancialCompromiseViewModel,
     incomeViewModel: IncomeViewModel,
     notificationViewModel: NotificationViewModel,
+    analyticsViewModel: AnalyticsViewModel,
     modifier: Modifier = Modifier
 ) {
     NavHost(
@@ -232,6 +235,11 @@ fun FinanceNavHost(
                 viewModel = incomeViewModel,
                 onNavigateBack = { navController.popBackStack() }
             )
+        }
+
+        // Analytics
+        composable(Screen.Analytics.route) {
+            AnalyticsScreen(viewModel = analyticsViewModel)
         }
 
         // Notification screens

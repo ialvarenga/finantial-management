@@ -2,6 +2,7 @@ package com.example.organizadordefinancas
 
 import android.app.Application
 import com.example.organizadordefinancas.data.database.AppDatabase
+import com.example.organizadordefinancas.data.repository.AnalyticsRepository
 import com.example.organizadordefinancas.data.repository.BankRepository
 import com.example.organizadordefinancas.data.repository.CapturedNotificationRepository
 import com.example.organizadordefinancas.data.repository.CompromiseOccurrenceRepository
@@ -34,6 +35,10 @@ class FinanceApplication : Application() {
 
     val capturedNotificationRepository by lazy {
         CapturedNotificationRepository(database.capturedNotificationDao())
+    }
+
+    val analyticsRepository by lazy {
+        AnalyticsRepository(database.creditCardItemDao())
     }
 }
 
