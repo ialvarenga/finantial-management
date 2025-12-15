@@ -285,3 +285,67 @@ compromiseViewModel.togglePaidStatus(compromisso)
 | INVESTMENT | Investimento |
 | WALLET | Carteira |
 
+### Categorias de Receitas
+| Enum | Nome PT-BR |
+|------|------------|
+| SALARY | Salário |
+| FREELANCE | Freelance |
+| INVESTMENT | Investimento |
+| BONUS | Bônus |
+| GIFT | Presente |
+| RENTAL | Aluguel |
+| SALE | Venda |
+| REFUND | Reembolso |
+| OTHER | Outros |
+
+### Tipos de Receita
+| Enum | Descrição |
+|------|-----------|
+| RECURRENT | Receita recorrente (ex: salário) |
+| ONE_TIME | Receita única (ex: valor pontual) |
+
+---
+
+## 📥 Statement Parser
+
+O app suporta importação de extratos nos formatos CSV e OFX.
+
+### StatementParserFactory
+
+```kotlin
+// Obter parser baseado na extensão do arquivo
+fun getParser(fileName: String): StatementParser?
+
+// Formatos suportados
+fun getSupportedFormats(): List<String>  // ["CSV", "OFX"]
+```
+
+### ParsedStatementItem
+
+```kotlin
+data class ParsedStatementItem(
+    val date: LocalDate,
+    val description: String,
+    val amount: Double,
+    val isSelected: Boolean = true
+)
+```
+
+### Exemplo de Uso
+
+```kotlin
+val parser = StatementParserFactory.getParser("extrato.csv")
+parser?.parse(inputStream)?.onSuccess { items ->
+    items.filter { it.isSelected }.forEach { item ->
+        creditCardViewModel.insertItem(
+            CreditCardItem(
+                cardId = cardId,
+                description = item.description,
+                amount = item.amount,
+                purchaseDate = item.date.toTimestamp()
+            )
+        )
+    }
+}
+```
+

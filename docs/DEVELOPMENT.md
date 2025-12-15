@@ -142,6 +142,16 @@ sealed class Screen(val route: String, val title: String, val icon: ImageVector?
     object CreditCardDetail : Screen("credit_card_detail/{cardId}", "Detalhes") {
         fun createRoute(cardId: Long) = "credit_card_detail/$cardId"
     }
+    object EditCreditCardItem : Screen("edit_credit_card_item/{itemId}", "Editar Item") {
+        fun createRoute(itemId: Long) = "edit_credit_card_item/$itemId"
+    }
+    object ImportStatement : Screen("import_statement/{cardId}", "Importar Extrato") {
+        fun createRoute(cardId: Long) = "import_statement/$cardId"
+    }
+    object Incomes : Screen("incomes", "Receitas", Icons.Default.AttachMoney)
+    object AddEditIncome : Screen("add_edit_income?incomeId={incomeId}", "Receita") {
+        fun createRoute(incomeId: Long? = null) = if (incomeId != null) "add_edit_income?incomeId=$incomeId" else "add_edit_income"
+    }
 }
 ```
 
@@ -194,9 +204,12 @@ Registrar a Application:
 1. [ ] Adicionar Hilt para DI
 2. [ ] Implementar testes unitários
 3. [ ] Adicionar gráficos de gastos
-4. [ ] Exportar dados para CSV/PDF
-5. [ ] Notificações de vencimento
-6. [ ] Backup na nuvem
-7. [ ] Tema escuro personalizado
-8. [ ] Multi-moeda
+4. [x] ~~Importar dados de CSV/OFX~~ ✅ Implementado
+5. [ ] Exportar dados para CSV/PDF
+6. [ ] Notificações de vencimento
+7. [ ] Backup na nuvem
+8. [ ] Tema escuro personalizado
+9. [ ] Multi-moeda
+10. [x] ~~Controle de receitas~~ ✅ Implementado
+11. [x] ~~Edição de itens de fatura~~ ✅ Implementado
 

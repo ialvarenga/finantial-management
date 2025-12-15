@@ -8,6 +8,8 @@ O **Organizador de Finanças** é um app que permite gerenciar:
 - 💳 **Cartões de Crédito** - com controle de fatura e itens de compra
 - 🏦 **Contas Bancárias** - saldos e tipos de conta
 - 📄 **Contas Fixas** - compromissos financeiros recorrentes (aluguel, energia, internet, etc.)
+- 💰 **Receitas** - controle de rendas recorrentes e pontuais
+- 📥 **Importação de Extratos** - importar faturas de arquivos CSV/OFX
 
 ## 🏗️ Arquitetura
 
@@ -19,10 +21,11 @@ O projeto segue a arquitetura **MVVM (Model-View-ViewModel)** com as seguintes c
 │  (Screens, Components, Navigation, Theme)               │
 ├─────────────────────────────────────────────────────────┤
 │                    ViewModel Layer                      │
-│  (CreditCardViewModel, BankViewModel, CompromiseVM)     │
+│  (CreditCardViewModel, BankViewModel, CompromiseVM,     │
+│   IncomeViewModel)                                      │
 ├─────────────────────────────────────────────────────────┤
 │                   Repository Layer                      │
-│  (CreditCardRepo, BankRepo, CompromiseRepo)             │
+│  (CreditCardRepo, BankRepo, CompromiseRepo, IncomeRepo) │
 ├─────────────────────────────────────────────────────────┤
 │                     Data Layer                          │
 │  (Room Database, DAOs, Entities)                        │
@@ -42,27 +45,34 @@ app/src/main/java/com/example/organizadordefinancas/
 │   │   ├── CreditCard.kt
 │   │   ├── CreditCardItem.kt
 │   │   ├── Bank.kt
-│   │   └── FinancialCompromise.kt
+│   │   ├── FinancialCompromise.kt
+│   │   └── Income.kt
 │   │
 │   ├── dao/                     # Data Access Objects
 │   │   ├── CreditCardDao.kt
 │   │   ├── CreditCardItemDao.kt
 │   │   ├── BankDao.kt
-│   │   └── FinancialCompromiseDao.kt
+│   │   ├── FinancialCompromiseDao.kt
+│   │   └── IncomeDao.kt
 │   │
 │   ├── database/                # Configuração do Room
 │   │   └── AppDatabase.kt
 │   │
+│   ├── parser/                  # Parsers de arquivo
+│   │   └── StatementParser.kt   # Parser CSV/OFX
+│   │
 │   └── repository/              # Repositórios
 │       ├── CreditCardRepository.kt
 │       ├── BankRepository.kt
-│       └── FinancialCompromiseRepository.kt
+│       ├── FinancialCompromiseRepository.kt
+│       └── IncomeRepository.kt
 │
 └── ui/                          # Camada de UI
     ├── viewmodel/               # ViewModels
     │   ├── CreditCardViewModel.kt
     │   ├── BankViewModel.kt
-    │   └── FinancialCompromiseViewModel.kt
+    │   ├── FinancialCompromiseViewModel.kt
+    │   └── IncomeViewModel.kt
     │
     ├── navigation/              # Navegação
     │   ├── Screen.kt            # Definição de rotas
@@ -75,13 +85,18 @@ app/src/main/java/com/example/organizadordefinancas/
     │   │   ├── CreditCardListScreen.kt
     │   │   ├── CreditCardDetailScreen.kt
     │   │   ├── AddEditCreditCardScreen.kt
-    │   │   └── AddCreditCardItemScreen.kt
+    │   │   ├── AddCreditCardItemScreen.kt
+    │   │   ├── EditCreditCardItemScreen.kt
+    │   │   └── ImportStatementScreen.kt
     │   ├── bank/
     │   │   ├── BankListScreen.kt
     │   │   └── AddEditBankScreen.kt
-    │   └── compromise/
-    │       ├── CompromiseListScreen.kt
-    │       └── AddEditCompromiseScreen.kt
+    │   ├── compromise/
+    │   │   ├── CompromiseListScreen.kt
+    │   │   └── AddEditCompromiseScreen.kt
+    │   └── income/
+    │       ├── IncomeListScreen.kt
+    │       └── AddEditIncomeScreen.kt
     │
     ├── components/              # Componentes reutilizáveis
     │   └── CommonComponents.kt
@@ -156,6 +171,34 @@ app/src/main/java/com/example/organizadordefinancas/
 - `TRANSPORT` - Transporte
 - `OTHER` - Outros
 
+### Income (Receita)
+| Campo | Tipo | Descrição |
+|-------|------|-----------|
+| id | Long | Identificador único |
+| description | String | Descrição da receita |
+| amount | Double | Valor |
+| category | IncomeCategory | Categoria |
+| type | IncomeType | Tipo (recorrente/único) |
+| receiveDay | Int | Dia de recebimento (1-31) |
+| date | Long | Data para receita única |
+| isReceived | Boolean | Se foi recebida no mês |
+| isActive | Boolean | Se está ativa |
+
+**IncomeCategory (Enum):**
+- `SALARY` - Salário
+- `FREELANCE` - Freelance
+- `INVESTMENT` - Investimento
+- `BONUS` - Bônus
+- `GIFT` - Presente
+- `RENTAL` - Aluguel
+- `SALE` - Venda
+- `REFUND` - Reembolso
+- `OTHER` - Outros
+
+**IncomeType (Enum):**
+- `RECURRENT` - Recorrente (ex: salário)
+- `ONE_TIME` - Único (ex: valor pontual)
+
 ## 🧭 Navegação
 
 O app utiliza **Navigation Compose** com bottom navigation:
@@ -166,13 +209,17 @@ O app utiliza **Navigation Compose** com bottom navigation:
 | `credit_cards` | Lista de Cartões | CreditCard |
 | `banks` | Lista de Bancos | AccountBalance |
 | `compromises` | Contas Fixas | Receipt |
+| `incomes` | Receitas | AttachMoney |
 
 ### Rotas Secundárias
 - `credit_card_detail/{cardId}` - Detalhes do cartão
 - `add_edit_credit_card?cardId={cardId}` - Adicionar/Editar cartão
 - `add_credit_card_item/{cardId}` - Adicionar item na fatura
+- `edit_credit_card_item/{itemId}` - Editar item da fatura
+- `import_statement/{cardId}` - Importar extrato CSV/OFX
 - `add_edit_bank?bankId={bankId}` - Adicionar/Editar banco
 - `add_edit_compromise?compromiseId={id}` - Adicionar/Editar conta fixa
+- `add_edit_income?incomeId={id}` - Adicionar/Editar receita
 
 ## 📦 Dependências
 
@@ -213,8 +260,10 @@ composeBom = "2024.09.00"
 - Barra de uso do limite
 - Adicionar/editar cartões
 - Gerenciar itens da fatura
+- Editar itens existentes
 - Categorias de compras
 - Suporte a parcelamento
+- **Importação de Extratos** (CSV/OFX)
 
 ### 3. Bancos
 - Lista de contas com saldo
@@ -227,6 +276,13 @@ composeBom = "2024.09.00"
 - Checkbox para marcar como pago
 - Ícones por categoria
 - Barra de progresso (pagas/total)
+
+### 5. Receitas
+- Lista de receitas recorrentes e pontuais
+- Total mensal de receitas
+- Categorias (Salário, Freelance, etc.)
+- Checkbox para marcar como recebido
+- Suporte a receitas recorrentes e únicas
 
 ## 🚀 Como Executar
 
