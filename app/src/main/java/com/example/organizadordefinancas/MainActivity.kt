@@ -46,10 +46,20 @@ fun FinanceApp(application: FinanceApplication) {
         factory = BankViewModelFactory(application.bankRepository)
     )
     val compromiseViewModel: FinancialCompromiseViewModel = viewModel(
-        factory = FinancialCompromiseViewModelFactory(application.financialCompromiseRepository)
+        factory = FinancialCompromiseViewModelFactory(
+            application.financialCompromiseRepository,
+            application.compromiseOccurrenceRepository
+        )
     )
     val incomeViewModel: IncomeViewModel = viewModel(
         factory = IncomeViewModelFactory(application.incomeRepository)
+    )
+    val notificationViewModel: NotificationViewModel = viewModel(
+        factory = NotificationViewModelFactory(
+            application.capturedNotificationRepository,
+            application.creditCardRepository,
+            application.bankRepository
+        )
     )
 
     val navBackStackEntry by navController.currentBackStackEntryAsState()
@@ -93,6 +103,7 @@ fun FinanceApp(application: FinanceApplication) {
             bankViewModel = bankViewModel,
             compromiseViewModel = compromiseViewModel,
             incomeViewModel = incomeViewModel,
+            notificationViewModel = notificationViewModel,
             modifier = Modifier.padding(innerPadding)
         )
     }

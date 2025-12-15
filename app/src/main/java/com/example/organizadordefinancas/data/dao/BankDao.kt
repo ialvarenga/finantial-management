@@ -12,6 +12,9 @@ interface BankDao {
     @Query("SELECT * FROM banks WHERE id = :id")
     fun getBankById(id: Long): Flow<Bank?>
 
+    @Query("SELECT * FROM banks WHERE id = :id")
+    suspend fun getBankByIdSync(id: Long): Bank?
+
     @Query("SELECT SUM(balance) FROM banks")
     fun getTotalBalance(): Flow<Double?>
 
@@ -23,6 +26,12 @@ interface BankDao {
 
     @Update
     suspend fun updateBank(bank: Bank)
+
+    @Query("UPDATE banks SET balance = balance - :amount WHERE id = :bankId")
+    suspend fun deductFromBalance(bankId: Long, amount: Double)
+
+    @Query("UPDATE banks SET balance = balance + :amount WHERE id = :bankId")
+    suspend fun addToBalance(bankId: Long, amount: Double)
 
     @Delete
     suspend fun deleteBank(bank: Bank)

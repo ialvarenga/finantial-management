@@ -9,6 +9,8 @@ class BankRepository(private val bankDao: BankDao) {
 
     fun getBankById(id: Long): Flow<Bank?> = bankDao.getBankById(id)
 
+    suspend fun getBankByIdSync(id: Long): Bank? = bankDao.getBankByIdSync(id)
+
     fun getTotalBalance(): Flow<Double?> = bankDao.getTotalBalance()
 
     fun getTotalSavingsBalance(): Flow<Double?> = bankDao.getTotalSavingsBalance()
@@ -16,6 +18,12 @@ class BankRepository(private val bankDao: BankDao) {
     suspend fun insertBank(bank: Bank): Long = bankDao.insertBank(bank)
 
     suspend fun updateBank(bank: Bank) = bankDao.updateBank(bank)
+
+    suspend fun deductFromBalance(bankId: Long, amount: Double) =
+        bankDao.deductFromBalance(bankId, amount)
+
+    suspend fun addToBalance(bankId: Long, amount: Double) =
+        bankDao.addToBalance(bankId, amount)
 
     suspend fun deleteBank(bank: Bank) = bankDao.deleteBank(bank)
 

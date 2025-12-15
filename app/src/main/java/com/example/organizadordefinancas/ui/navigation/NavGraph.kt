@@ -20,10 +20,13 @@ import com.example.organizadordefinancas.ui.screens.creditcard.ImportStatementSc
 import com.example.organizadordefinancas.ui.screens.home.HomeScreen
 import com.example.organizadordefinancas.ui.screens.income.AddEditIncomeScreen
 import com.example.organizadordefinancas.ui.screens.income.IncomeListScreen
+import com.example.organizadordefinancas.ui.screens.notification.NotificationSettingsScreen
+import com.example.organizadordefinancas.ui.screens.notification.PendingNotificationsScreen
 import com.example.organizadordefinancas.ui.viewmodel.BankViewModel
 import com.example.organizadordefinancas.ui.viewmodel.CreditCardViewModel
 import com.example.organizadordefinancas.ui.viewmodel.FinancialCompromiseViewModel
 import com.example.organizadordefinancas.ui.viewmodel.IncomeViewModel
+import com.example.organizadordefinancas.ui.viewmodel.NotificationViewModel
 
 @Composable
 fun FinanceNavHost(
@@ -32,6 +35,7 @@ fun FinanceNavHost(
     bankViewModel: BankViewModel,
     compromiseViewModel: FinancialCompromiseViewModel,
     incomeViewModel: IncomeViewModel,
+    notificationViewModel: NotificationViewModel,
     modifier: Modifier = Modifier
 ) {
     NavHost(
@@ -45,7 +49,11 @@ fun FinanceNavHost(
                 creditCardViewModel = creditCardViewModel,
                 bankViewModel = bankViewModel,
                 compromiseViewModel = compromiseViewModel,
-                incomeViewModel = incomeViewModel
+                incomeViewModel = incomeViewModel,
+                notificationViewModel = notificationViewModel,
+                onNavigateToPendingNotifications = {
+                    navController.navigate(Screen.PendingNotifications.route)
+                }
             )
         }
 
@@ -222,6 +230,23 @@ fun FinanceNavHost(
             AddEditIncomeScreen(
                 incomeId = incomeId,
                 viewModel = incomeViewModel,
+                onNavigateBack = { navController.popBackStack() }
+            )
+        }
+
+        // Notification screens
+        composable(Screen.PendingNotifications.route) {
+            PendingNotificationsScreen(
+                viewModel = notificationViewModel,
+                onNavigateBack = { navController.popBackStack() },
+                onNavigateToSettings = {
+                    navController.navigate(Screen.NotificationSettings.route)
+                }
+            )
+        }
+
+        composable(Screen.NotificationSettings.route) {
+            NotificationSettingsScreen(
                 onNavigateBack = { navController.popBackStack() }
             )
         }

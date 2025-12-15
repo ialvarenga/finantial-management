@@ -18,6 +18,9 @@ interface FinancialCompromiseDao {
     @Query("SELECT * FROM financial_compromises WHERE isActive = 1 AND linkedCreditCardId = :cardId ORDER BY dueDay ASC")
     fun getCompromisesByCardId(cardId: Long): Flow<List<FinancialCompromise>>
 
+    @Query("SELECT * FROM financial_compromises WHERE isActive = 1 AND frequency = :frequency ORDER BY dueDay ASC")
+    fun getCompromisesByFrequency(frequency: String): Flow<List<FinancialCompromise>>
+
     @Query("SELECT SUM(amount) FROM financial_compromises WHERE isActive = 1")
     fun getTotalMonthlyCompromises(): Flow<Double?>
 

@@ -47,6 +47,7 @@ fun AddEditCreditCardScreen(
     var cardLimit by remember { mutableStateOf("") }
     var dueDay by remember { mutableStateOf("") }
     var closingDay by remember { mutableStateOf("") }
+    var lastFourDigits by remember { mutableStateOf("") }
     var selectedColor by remember { mutableStateOf(cardColors[0]) }
     var isLoading by remember { mutableStateOf(cardId != null) }
 
@@ -67,6 +68,7 @@ fun AddEditCreditCardScreen(
                 cardLimit = card.cardLimit.toString()
                 dueDay = card.dueDay.toString()
                 closingDay = card.closingDay.toString()
+                lastFourDigits = card.lastFourDigits ?: ""
                 selectedColor = card.color
                 isLoading = false
             }
@@ -166,6 +168,20 @@ fun AddEditCreditCardScreen(
                     )
                 }
 
+                OutlinedTextField(
+                    value = lastFourDigits,
+                    onValueChange = { input ->
+                        val filtered = input.filter { c -> c.isDigit() }.take(4)
+                        lastFourDigits = filtered
+                    },
+                    label = { Text("Últimos 4 Dígitos (Opcional)") },
+                    placeholder = { Text("Ex: 1234") },
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    supportingText = { Text("Para vincular automaticamente com Google Wallet") }
+                )
+
                 Text(
                     text = "Cor do Cartão",
                     style = MaterialTheme.typography.titleMedium
@@ -211,7 +227,8 @@ fun AddEditCreditCardScreen(
                             cardLimit = cardLimit.toDoubleOrNull() ?: 0.0,
                             dueDay = dueDay.toIntOrNull() ?: 1,
                             closingDay = closingDay.toIntOrNull() ?: 1,
-                            color = selectedColor
+                            color = selectedColor,
+                            lastFourDigits = lastFourDigits.ifBlank { null }
                         )
                         if (isEditing) {
                             viewModel.updateCreditCard(card)

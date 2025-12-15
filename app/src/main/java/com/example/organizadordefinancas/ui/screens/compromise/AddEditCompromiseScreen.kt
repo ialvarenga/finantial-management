@@ -7,6 +7,8 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.CreditCard
+import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -15,10 +17,14 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.example.organizadordefinancas.data.model.CompromiseCategory
+import com.example.organizadordefinancas.data.model.CompromiseFrequency
 import com.example.organizadordefinancas.data.model.CreditCard
 import com.example.organizadordefinancas.data.model.FinancialCompromise
+import com.example.organizadordefinancas.data.model.getDisplayName
 import com.example.organizadordefinancas.ui.viewmodel.CreditCardViewModel
 import com.example.organizadordefinancas.ui.viewmodel.FinancialCompromiseViewModel
+import java.text.SimpleDateFormat
+import java.util.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -37,6 +43,15 @@ fun AddEditCompromiseScreen(
     var isLoading by remember { mutableStateOf(compromiseId != null) }
     var selectedCreditCardId by remember { mutableStateOf<Long?>(null) }
     var expandedCreditCard by remember { mutableStateOf(false) }
+
+    // New frequency-related state
+    var selectedFrequency by remember { mutableStateOf(CompromiseFrequency.MONTHLY) }
+    var expandedFrequency by remember { mutableStateOf(false) }
+    var dayOfWeek by remember { mutableStateOf(1) } // 1 = Monday
+    var expandedDayOfWeek by remember { mutableStateOf(false) }
+    var monthOfYear by remember { mutableStateOf(1) } // 1 = January
+    var expandedMonthOfYear by remember { mutableStateOf(false) }
+    var reminderDaysBefore by remember { mutableStateOf("3") }
 
     val creditCards by creditCardViewModel.allCreditCards.collectAsState()
     val isEditing = compromiseId != null
@@ -57,6 +72,11 @@ fun AddEditCompromiseScreen(
                 dueDay = compromise.dueDay.toString()
                 selectedCategory = compromise.category
                 selectedCreditCardId = compromise.linkedCreditCardId
+                // Load frequency fields
+                selectedFrequency = compromise.frequency
+                dayOfWeek = compromise.dayOfWeek ?: 1
+                monthOfYear = compromise.monthOfYear ?: 1
+                reminderDaysBefore = compromise.reminderDaysBefore.toString()
                 isLoading = false
             }
         }
@@ -64,7 +84,10 @@ fun AddEditCompromiseScreen(
 
     val isFormValid = name.isNotBlank() &&
         amount.toDoubleOrNull() != null &&
-        (selectedCreditCardId != null || dueDay.toIntOrNull() in 1..31)
+        (selectedCreditCardId != null || when (selectedFrequency) {
+            CompromiseFrequency.WEEKLY, CompromiseFrequency.BIWEEKLY -> true // dayOfWeek is always valid
+            else -> dueDay.toIntOrNull() in 1..31
+        })
 
     Scaffold(
         topBar = {
@@ -119,8 +142,100 @@ fun AddEditCompromiseScreen(
                     prefix = { Text("R$ ") }
                 )
 
-                // Only show due day field if not linked to a credit card
-                if (selectedCreditCardId == null) {
+                // Frequency Selector
+                ExposedDropdownMenuBox(
+                    expanded = expandedFrequency,
+                    onExpandedChange = { expandedFrequency = !expandedFrequency }
+                ) {
+                    OutlinedTextField(
+                        value = selectedFrequency.getDisplayName(),
+                        onValueChange = {},
+                        readOnly = true,
+                        label = { Text("Frequência") },
+                        leadingIcon = {
+                            Icon(
+                                imageVector = Icons.Default.Refresh,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary
+                            )
+                        },
+                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedFrequency) },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .menuAnchor()
+                    )
+
+                    ExposedDropdownMenu(
+                        expanded = expandedFrequency,
+                        onDismissRequest = { expandedFrequency = false }
+                    ) {
+                        CompromiseFrequency.entries.forEach { frequency ->
+                            DropdownMenuItem(
+                                text = { Text(frequency.getDisplayName()) },
+                                onClick = {
+                                    selectedFrequency = frequency
+                                    expandedFrequency = false
+                                }
+                            )
+                        }
+                    }
+                }
+
+                // Day of Week selector (for WEEKLY and BIWEEKLY)
+                if (selectedFrequency == CompromiseFrequency.WEEKLY || selectedFrequency == CompromiseFrequency.BIWEEKLY) {
+                    val daysOfWeek = listOf(
+                        1 to "Segunda-feira",
+                        2 to "Terça-feira",
+                        3 to "Quarta-feira",
+                        4 to "Quinta-feira",
+                        5 to "Sexta-feira",
+                        6 to "Sábado",
+                        7 to "Domingo"
+                    )
+
+                    ExposedDropdownMenuBox(
+                        expanded = expandedDayOfWeek,
+                        onExpandedChange = { expandedDayOfWeek = !expandedDayOfWeek }
+                    ) {
+                        OutlinedTextField(
+                            value = daysOfWeek.find { it.first == dayOfWeek }?.second ?: "Segunda-feira",
+                            onValueChange = {},
+                            readOnly = true,
+                            label = { Text("Dia da Semana") },
+                            leadingIcon = {
+                                Icon(
+                                    imageVector = Icons.Default.DateRange,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.primary
+                                )
+                            },
+                            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedDayOfWeek) },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .menuAnchor()
+                        )
+
+                        ExposedDropdownMenu(
+                            expanded = expandedDayOfWeek,
+                            onDismissRequest = { expandedDayOfWeek = false }
+                        ) {
+                            daysOfWeek.forEach { (day, name) ->
+                                DropdownMenuItem(
+                                    text = { Text(name) },
+                                    onClick = {
+                                        dayOfWeek = day
+                                        expandedDayOfWeek = false
+                                    }
+                                )
+                            }
+                        }
+                    }
+                }
+
+                // Only show due day field if not linked to a credit card and frequency requires it
+                if (selectedCreditCardId == null &&
+                    selectedFrequency != CompromiseFrequency.WEEKLY &&
+                    selectedFrequency != CompromiseFrequency.BIWEEKLY) {
                     OutlinedTextField(
                         value = dueDay,
                         onValueChange = {
@@ -136,6 +251,88 @@ fun AddEditCompromiseScreen(
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
                     )
                 }
+
+                // Month selector for QUARTERLY, SEMIANNUAL, and ANNUAL
+                if (selectedFrequency == CompromiseFrequency.QUARTERLY ||
+                    selectedFrequency == CompromiseFrequency.SEMIANNUAL ||
+                    selectedFrequency == CompromiseFrequency.ANNUAL) {
+                    val months = listOf(
+                        1 to "Janeiro",
+                        2 to "Fevereiro",
+                        3 to "Março",
+                        4 to "Abril",
+                        5 to "Maio",
+                        6 to "Junho",
+                        7 to "Julho",
+                        8 to "Agosto",
+                        9 to "Setembro",
+                        10 to "Outubro",
+                        11 to "Novembro",
+                        12 to "Dezembro"
+                    )
+
+                    val monthLabel = when (selectedFrequency) {
+                        CompromiseFrequency.ANNUAL -> "Mês do Vencimento"
+                        CompromiseFrequency.SEMIANNUAL -> "Primeiro Mês"
+                        CompromiseFrequency.QUARTERLY -> "Primeiro Mês do Trimestre"
+                        else -> "Mês"
+                    }
+
+                    ExposedDropdownMenuBox(
+                        expanded = expandedMonthOfYear,
+                        onExpandedChange = { expandedMonthOfYear = !expandedMonthOfYear }
+                    ) {
+                        OutlinedTextField(
+                            value = months.find { it.first == monthOfYear }?.second ?: "Janeiro",
+                            onValueChange = {},
+                            readOnly = true,
+                            label = { Text(monthLabel) },
+                            leadingIcon = {
+                                Icon(
+                                    imageVector = Icons.Default.DateRange,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.primary
+                                )
+                            },
+                            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedMonthOfYear) },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .menuAnchor()
+                        )
+
+                        ExposedDropdownMenu(
+                            expanded = expandedMonthOfYear,
+                            onDismissRequest = { expandedMonthOfYear = false }
+                        ) {
+                            months.forEach { (month, name) ->
+                                DropdownMenuItem(
+                                    text = { Text(name) },
+                                    onClick = {
+                                        monthOfYear = month
+                                        expandedMonthOfYear = false
+                                    }
+                                )
+                            }
+                        }
+                    }
+                }
+
+                // Reminder days field
+                OutlinedTextField(
+                    value = reminderDaysBefore,
+                    onValueChange = {
+                        val filtered = it.filter { c -> c.isDigit() }
+                        if (filtered.isEmpty() || filtered.toInt() <= 30) {
+                            reminderDaysBefore = filtered
+                        }
+                    },
+                    label = { Text("Lembrete (dias antes)") },
+                    placeholder = { Text("Ex: 3") },
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    supportingText = { Text("Quantos dias antes você quer ser lembrado") }
+                )
 
                 ExposedDropdownMenuBox(
                     expanded = expandedCategory,
@@ -275,15 +472,35 @@ fun AddEditCompromiseScreen(
 
                 Button(
                     onClick = {
+                        val effectiveDueDay = when {
+                            selectedCreditCardId != null -> 0
+                            selectedFrequency == CompromiseFrequency.WEEKLY ||
+                            selectedFrequency == CompromiseFrequency.BIWEEKLY -> 0
+                            else -> dueDay.toIntOrNull() ?: 1
+                        }
+
                         val compromise = FinancialCompromise(
                             id = compromiseId ?: 0,
                             name = name,
                             amount = amount.toDoubleOrNull() ?: 0.0,
-                            dueDay = if (selectedCreditCardId != null) 0 else (dueDay.toIntOrNull() ?: 1),
+                            dueDay = effectiveDueDay,
                             category = selectedCategory,
                             isPaid = selectedCompromise?.isPaid ?: false,
                             isActive = true,
-                            linkedCreditCardId = selectedCreditCardId
+                            linkedCreditCardId = selectedCreditCardId,
+                            // New frequency fields
+                            frequency = selectedFrequency,
+                            dayOfWeek = if (selectedFrequency == CompromiseFrequency.WEEKLY ||
+                                           selectedFrequency == CompromiseFrequency.BIWEEKLY) dayOfWeek else null,
+                            dayOfMonth = if (selectedFrequency != CompromiseFrequency.WEEKLY &&
+                                            selectedFrequency != CompromiseFrequency.BIWEEKLY)
+                                            (dueDay.toIntOrNull() ?: 1) else null,
+                            monthOfYear = if (selectedFrequency == CompromiseFrequency.QUARTERLY ||
+                                             selectedFrequency == CompromiseFrequency.SEMIANNUAL ||
+                                             selectedFrequency == CompromiseFrequency.ANNUAL) monthOfYear else null,
+                            startDate = selectedCompromise?.startDate ?: System.currentTimeMillis(),
+                            endDate = selectedCompromise?.endDate,
+                            reminderDaysBefore = reminderDaysBefore.toIntOrNull() ?: 3
                         )
                         if (isEditing) {
                             viewModel.updateCompromise(compromise)

@@ -6,6 +6,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountBalance
 import androidx.compose.material.icons.filled.CreditCard
+import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Receipt
 import androidx.compose.material.icons.filled.Savings
 import androidx.compose.material.icons.filled.TrendingDown
@@ -24,6 +25,7 @@ import com.example.organizadordefinancas.ui.viewmodel.BankViewModel
 import com.example.organizadordefinancas.ui.viewmodel.CreditCardViewModel
 import com.example.organizadordefinancas.ui.viewmodel.FinancialCompromiseViewModel
 import com.example.organizadordefinancas.ui.viewmodel.IncomeViewModel
+import com.example.organizadordefinancas.ui.viewmodel.NotificationViewModel
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.util.Locale
@@ -35,6 +37,8 @@ fun HomeScreen(
     bankViewModel: BankViewModel,
     compromiseViewModel: FinancialCompromiseViewModel,
     incomeViewModel: IncomeViewModel,
+    notificationViewModel: NotificationViewModel,
+    onNavigateToPendingNotifications: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val banks by bankViewModel.allBanks.collectAsState()
@@ -46,6 +50,7 @@ fun HomeScreen(
     val totalAllCompromises by compromiseViewModel.totalMonthlyCompromises.collectAsState()
     val incomes by incomeViewModel.allIncomes.collectAsState()
     val totalMonthlyIncome by incomeViewModel.totalMonthlyIncome.collectAsState()
+    val pendingNotificationCount by notificationViewModel.pendingCount.collectAsState()
 
     // Credit card items only (purchases)
     val totalCreditCardItemsOnly = allItems.sumOf { it.amount }
@@ -66,6 +71,27 @@ fun HomeScreen(
                             text = currentDate.format(dateFormatter).replaceFirstChar { it.uppercase() },
                             style = MaterialTheme.typography.bodySmall
                         )
+                    }
+                },
+                actions = {
+                    // Notification button with badge
+                    BadgedBox(
+                        badge = {
+                            if (pendingNotificationCount > 0) {
+                                Badge {
+                                    Text(
+                                        text = if (pendingNotificationCount > 99) "99+" else pendingNotificationCount.toString()
+                                    )
+                                }
+                            }
+                        }
+                    ) {
+                        IconButton(onClick = onNavigateToPendingNotifications) {
+                            Icon(
+                                imageVector = Icons.Default.Notifications,
+                                contentDescription = "Transações Pendentes"
+                            )
+                        }
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(

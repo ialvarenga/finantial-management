@@ -5,7 +5,9 @@ import androidx.compose.material.icons.filled.AccountBalance
 import androidx.compose.material.icons.filled.AttachMoney
 import androidx.compose.material.icons.filled.CreditCard
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Receipt
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.ui.graphics.vector.ImageVector
 
 sealed class Screen(val route: String, val title: String, val icon: ImageVector? = null) {
@@ -38,6 +40,9 @@ sealed class Screen(val route: String, val title: String, val icon: ImageVector?
     object AddEditIncome : Screen("add_edit_income?incomeId={incomeId}", "Receita") {
         fun createRoute(incomeId: Long? = null) = if (incomeId != null) "add_edit_income?incomeId=$incomeId" else "add_edit_income"
     }
+    // Notification screens
+    object PendingNotifications : Screen("pending_notifications", "Transações Pendentes", Icons.Default.Notifications)
+    object NotificationSettings : Screen("notification_settings", "Configurações de Notificações", Icons.Default.Settings)
 }
 
 val bottomNavItems = listOf(

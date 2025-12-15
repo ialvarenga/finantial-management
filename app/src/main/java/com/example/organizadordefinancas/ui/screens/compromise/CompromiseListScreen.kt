@@ -16,11 +16,15 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import com.example.organizadordefinancas.data.model.CompromiseCategory
+import com.example.organizadordefinancas.data.model.CompromiseFrequency
 import com.example.organizadordefinancas.data.model.FinancialCompromise
+import com.example.organizadordefinancas.data.model.getDisplayName
 import com.example.organizadordefinancas.ui.components.DeleteConfirmationDialog
 import com.example.organizadordefinancas.ui.components.formatCurrency
 import com.example.organizadordefinancas.ui.viewmodel.CreditCardViewModel
 import com.example.organizadordefinancas.ui.viewmodel.FinancialCompromiseViewModel
+import java.text.SimpleDateFormat
+import java.util.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -212,6 +216,28 @@ private fun CompromiseItem(
     onEdit: () -> Unit,
     onDelete: () -> Unit
 ) {
+    val dateFormat = remember { SimpleDateFormat("dd/MM", Locale.getDefault()) }
+    val nextDueDate = remember(compromise) {
+        Date(compromise.getNextDueDate())
+    }
+
+    // Build the subtitle text based on frequency
+    val subtitleText = remember(compromise) {
+        val frequencyText = compromise.frequency.getDisplayName()
+        when (compromise.frequency) {
+            CompromiseFrequency.WEEKLY, CompromiseFrequency.BIWEEKLY -> {
+                val dayName = getDayOfWeekName(compromise.dayOfWeek ?: 1)
+                "$frequencyText • $dayName"
+            }
+            CompromiseFrequency.MONTHLY -> {
+                "${getCategoryName(compromise.category)} • Dia ${compromise.getEffectiveDayOfMonth()}"
+            }
+            else -> {
+                "$frequencyText • Próx: ${dateFormat.format(nextDueDate)}"
+            }
+        }
+    }
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -250,10 +276,18 @@ private fun CompromiseItem(
                     color = if (compromise.isPaid) MaterialTheme.colorScheme.outline else MaterialTheme.colorScheme.onSurface
                 )
                 Text(
-                    text = "${getCategoryName(compromise.category)} • Dia ${compromise.dueDay}",
+                    text = subtitleText,
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.outline
                 )
+                // Show monthly equivalent for non-monthly frequencies
+                if (compromise.frequency != CompromiseFrequency.MONTHLY) {
+                    Text(
+                        text = "≈ ${formatCurrency(compromise.getMonthlyEquivalent())}/mês",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.tertiary
+                    )
+                }
             }
 
             Column(
@@ -340,6 +374,19 @@ fun getCategoryName(category: CompromiseCategory): String {
         CompromiseCategory.COMPANY -> "Empresa"
         CompromiseCategory.HOUSEHOLD -> "Casa"
         CompromiseCategory.OTHER -> "Outros"
+    }
+}
+
+fun getDayOfWeekName(dayOfWeek: Int): String {
+    return when (dayOfWeek) {
+        1 -> "Segunda"
+        2 -> "Terça"
+        3 -> "Quarta"
+        4 -> "Quinta"
+        5 -> "Sexta"
+        6 -> "Sábado"
+        7 -> "Domingo"
+        else -> "Segunda"
     }
 }
 

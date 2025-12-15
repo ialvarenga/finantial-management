@@ -11,5 +11,6 @@ data class CreditCard(
     val cardLimit: Double,
     val dueDay: Int,
     val closingDay: Int,
-    val color: Long = 0xFF6200EE
+    val color: Long = 0xFF6200EE,
+    val lastFourDigits: String? = null  // Last 4 digits for Google Wallet/notification matching
 )
