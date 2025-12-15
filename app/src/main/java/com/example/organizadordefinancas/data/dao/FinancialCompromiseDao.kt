@@ -15,8 +15,17 @@ interface FinancialCompromiseDao {
     @Query("SELECT * FROM financial_compromises WHERE id = :id")
     fun getCompromiseById(id: Long): Flow<FinancialCompromise?>
 
+    @Query("SELECT * FROM financial_compromises WHERE isActive = 1 AND linkedCreditCardId = :cardId ORDER BY dueDay ASC")
+    fun getCompromisesByCardId(cardId: Long): Flow<List<FinancialCompromise>>
+
     @Query("SELECT SUM(amount) FROM financial_compromises WHERE isActive = 1")
     fun getTotalMonthlyCompromises(): Flow<Double?>
+
+    @Query("SELECT SUM(amount) FROM financial_compromises WHERE isActive = 1 AND linkedCreditCardId IS NULL")
+    fun getTotalNonLinkedCompromises(): Flow<Double?>
+
+    @Query("SELECT SUM(amount) FROM financial_compromises WHERE isActive = 1 AND linkedCreditCardId = :cardId")
+    fun getTotalCompromisesByCardId(cardId: Long): Flow<Double?>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertCompromise(compromise: FinancialCompromise): Long

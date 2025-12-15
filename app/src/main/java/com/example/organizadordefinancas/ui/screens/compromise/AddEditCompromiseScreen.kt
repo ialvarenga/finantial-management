@@ -6,14 +6,18 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.CreditCard
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.example.organizadordefinancas.data.model.CompromiseCategory
+import com.example.organizadordefinancas.data.model.CreditCard
 import com.example.organizadordefinancas.data.model.FinancialCompromise
+import com.example.organizadordefinancas.ui.viewmodel.CreditCardViewModel
 import com.example.organizadordefinancas.ui.viewmodel.FinancialCompromiseViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -21,6 +25,7 @@ import com.example.organizadordefinancas.ui.viewmodel.FinancialCompromiseViewMod
 fun AddEditCompromiseScreen(
     compromiseId: Long?,
     viewModel: FinancialCompromiseViewModel,
+    creditCardViewModel: CreditCardViewModel,
     onNavigateBack: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -30,7 +35,10 @@ fun AddEditCompromiseScreen(
     var selectedCategory by remember { mutableStateOf(CompromiseCategory.OTHER) }
     var expandedCategory by remember { mutableStateOf(false) }
     var isLoading by remember { mutableStateOf(compromiseId != null) }
+    var selectedCreditCardId by remember { mutableStateOf<Long?>(null) }
+    var expandedCreditCard by remember { mutableStateOf(false) }
 
+    val creditCards by creditCardViewModel.allCreditCards.collectAsState()
     val isEditing = compromiseId != null
 
     LaunchedEffect(compromiseId) {
@@ -48,6 +56,7 @@ fun AddEditCompromiseScreen(
                 amount = compromise.amount.toString()
                 dueDay = compromise.dueDay.toString()
                 selectedCategory = compromise.category
+                selectedCreditCardId = compromise.linkedCreditCardId
                 isLoading = false
             }
         }
@@ -55,7 +64,7 @@ fun AddEditCompromiseScreen(
 
     val isFormValid = name.isNotBlank() &&
         amount.toDoubleOrNull() != null &&
-        dueDay.toIntOrNull() in 1..31
+        (selectedCreditCardId != null || dueDay.toIntOrNull() in 1..31)
 
     Scaffold(
         topBar = {
@@ -110,20 +119,23 @@ fun AddEditCompromiseScreen(
                     prefix = { Text("R$ ") }
                 )
 
-                OutlinedTextField(
-                    value = dueDay,
-                    onValueChange = {
-                        val filtered = it.filter { c -> c.isDigit() }
-                        if (filtered.isEmpty() || filtered.toInt() <= 31) {
-                            dueDay = filtered
-                        }
-                    },
-                    label = { Text("Dia do Vencimento") },
-                    placeholder = { Text("1-31") },
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true,
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
-                )
+                // Only show due day field if not linked to a credit card
+                if (selectedCreditCardId == null) {
+                    OutlinedTextField(
+                        value = dueDay,
+                        onValueChange = {
+                            val filtered = it.filter { c -> c.isDigit() }
+                            if (filtered.isEmpty() || filtered.toInt() <= 31) {
+                                dueDay = filtered
+                            }
+                        },
+                        label = { Text("Dia do Vencimento") },
+                        placeholder = { Text("1-31") },
+                        modifier = Modifier.fillMaxWidth(),
+                        singleLine = true,
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+                    )
+                }
 
                 ExposedDropdownMenuBox(
                     expanded = expandedCategory,
@@ -176,6 +188,89 @@ fun AddEditCompromiseScreen(
                     }
                 }
 
+                // Credit Card Link Dropdown
+                ExposedDropdownMenuBox(
+                    expanded = expandedCreditCard,
+                    onExpandedChange = { expandedCreditCard = !expandedCreditCard }
+                ) {
+                    val selectedCard = creditCards.find { it.id == selectedCreditCardId }
+                    OutlinedTextField(
+                        value = selectedCard?.name ?: "Nenhum (pago separadamente)",
+                        onValueChange = {},
+                        readOnly = true,
+                        label = { Text("Vincular ao Cartão") },
+                        leadingIcon = {
+                            Icon(
+                                imageVector = Icons.Default.CreditCard,
+                                contentDescription = null,
+                                tint = selectedCard?.let { Color(it.color) } ?: MaterialTheme.colorScheme.outline
+                            )
+                        },
+                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedCreditCard) },
+                        supportingText = {
+                            Text(
+                                if (selectedCreditCardId != null)
+                                    "Esta conta aparecerá na fatura do cartão"
+                                else
+                                    "Conta não vinculada a nenhum cartão"
+                            )
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .menuAnchor()
+                    )
+
+                    ExposedDropdownMenu(
+                        expanded = expandedCreditCard,
+                        onDismissRequest = { expandedCreditCard = false }
+                    ) {
+                        // Option for no credit card
+                        DropdownMenuItem(
+                            text = {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.CreditCard,
+                                        contentDescription = null,
+                                        tint = MaterialTheme.colorScheme.outline,
+                                        modifier = Modifier.size(24.dp)
+                                    )
+                                    Text("Nenhum (pago separadamente)")
+                                }
+                            },
+                            onClick = {
+                                selectedCreditCardId = null
+                                expandedCreditCard = false
+                            }
+                        )
+
+                        creditCards.forEach { card ->
+                            DropdownMenuItem(
+                                text = {
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.CreditCard,
+                                            contentDescription = null,
+                                            tint = Color(card.color),
+                                            modifier = Modifier.size(24.dp)
+                                        )
+                                        Text(card.name)
+                                    }
+                                },
+                                onClick = {
+                                    selectedCreditCardId = card.id
+                                    expandedCreditCard = false
+                                }
+                            )
+                        }
+                    }
+                }
+
                 Spacer(modifier = Modifier.weight(1f))
 
                 Button(
@@ -184,10 +279,11 @@ fun AddEditCompromiseScreen(
                             id = compromiseId ?: 0,
                             name = name,
                             amount = amount.toDoubleOrNull() ?: 0.0,
-                            dueDay = dueDay.toIntOrNull() ?: 1,
+                            dueDay = if (selectedCreditCardId != null) 0 else (dueDay.toIntOrNull() ?: 1),
                             category = selectedCategory,
                             isPaid = selectedCompromise?.isPaid ?: false,
-                            isActive = true
+                            isActive = true,
+                            linkedCreditCardId = selectedCreditCardId
                         )
                         if (isEditing) {
                             viewModel.updateCompromise(compromise)

@@ -9,6 +9,7 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Repeat
 import androidx.compose.material.icons.filled.Upload
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -18,9 +19,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.organizadordefinancas.data.model.CreditCardItem
+import com.example.organizadordefinancas.data.model.FinancialCompromise
 import com.example.organizadordefinancas.ui.components.DeleteConfirmationDialog
 import com.example.organizadordefinancas.ui.components.formatCurrency
 import com.example.organizadordefinancas.ui.viewmodel.CreditCardViewModel
+import com.example.organizadordefinancas.ui.viewmodel.FinancialCompromiseViewModel
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -29,6 +32,7 @@ import java.util.*
 fun CreditCardDetailScreen(
     cardId: Long,
     viewModel: CreditCardViewModel,
+    compromiseViewModel: FinancialCompromiseViewModel,
     onNavigateBack: () -> Unit,
     onNavigateToAddItem: (Long) -> Unit,
     onNavigateToEditItem: (Long) -> Unit,
@@ -43,7 +47,21 @@ fun CreditCardDetailScreen(
     val card by viewModel.selectedCard.collectAsState()
     val items by viewModel.cardItems.collectAsState()
     val total by viewModel.cardTotal.collectAsState()
+    val linkedCompromises by compromiseViewModel.getCompromisesByCardId(cardId).collectAsState(initial = emptyList())
+    val linkedCompromisesTotal by compromiseViewModel.getTotalCompromisesByCardId(cardId).collectAsState(initial = 0.0)
     var itemToDelete by remember { mutableStateOf<CreditCardItem?>(null) }
+
+    val grandTotal = total + linkedCompromisesTotal
+
+    // Calculate future committed payments (remaining installments)
+    val futurePayments = items.sumOf { item ->
+        if (item.installments > 1) {
+            item.amount * (item.installments - item.currentInstallment)
+        } else {
+            0.0
+        }
+    }
+    val totalCommitted = grandTotal + futurePayments
 
     Scaffold(
         topBar = {
@@ -122,13 +140,49 @@ fun CreditCardDetailScreen(
                                     color = MaterialTheme.colorScheme.outline
                                 )
                                 Text(
-                                    text = formatCurrency(total),
+                                    text = formatCurrency(grandTotal),
                                     style = MaterialTheme.typography.titleMedium,
                                     fontWeight = FontWeight.Bold,
                                     color = Color(0xFFE91E63)
                                 )
                             }
                         }
+
+                        // Show future payments if any
+                        if (futurePayments > 0) {
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Column {
+                                    Text(
+                                        text = "Parcelas Futuras",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.outline
+                                    )
+                                    Text(
+                                        text = formatCurrency(futurePayments),
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = Color(0xFFFF9800)
+                                    )
+                                }
+                                Column(horizontalAlignment = Alignment.End) {
+                                    Text(
+                                        text = "Total Comprometido",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.outline
+                                    )
+                                    Text(
+                                        text = formatCurrency(totalCommitted),
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        fontWeight = FontWeight.Bold,
+                                        color = Color(0xFFF44336)
+                                    )
+                                }
+                            }
+                        }
+
                         Spacer(modifier = Modifier.height(16.dp))
                         Row(
                             modifier = Modifier.fillMaxWidth(),
@@ -141,10 +195,10 @@ fun CreditCardDetailScreen(
                                     color = MaterialTheme.colorScheme.outline
                                 )
                                 Text(
-                                    text = formatCurrency(creditCard.cardLimit - total),
+                                    text = formatCurrency(creditCard.cardLimit - totalCommitted),
                                     style = MaterialTheme.typography.titleMedium,
                                     fontWeight = FontWeight.Bold,
-                                    color = Color(0xFF4CAF50)
+                                    color = if (creditCard.cardLimit - totalCommitted >= 0) Color(0xFF4CAF50) else Color(0xFFF44336)
                                 )
                             }
                             Column(horizontalAlignment = Alignment.End) {
@@ -156,9 +210,9 @@ fun CreditCardDetailScreen(
                             }
                         }
 
-                        // Usage bar
+                        // Usage bar - based on total committed
                         Spacer(modifier = Modifier.height(16.dp))
-                        val usagePercentage = if (creditCard.cardLimit > 0) (total / creditCard.cardLimit).toFloat().coerceIn(0f, 1f) else 0f
+                        val usagePercentage = if (creditCard.cardLimit > 0) (totalCommitted / creditCard.cardLimit).toFloat().coerceIn(0f, 1f) else 0f
                         LinearProgressIndicator(
                             progress = { usagePercentage },
                             modifier = Modifier
@@ -172,7 +226,7 @@ fun CreditCardDetailScreen(
                             trackColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f)
                         )
                         Text(
-                            text = "${(usagePercentage * 100).toInt()}% do limite utilizado",
+                            text = "${(usagePercentage * 100).toInt()}% do limite comprometido",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.outline,
                             modifier = Modifier.padding(top = 4.dp)
@@ -182,14 +236,15 @@ fun CreditCardDetailScreen(
             }
 
             // Items List
+            val totalItems = items.size + linkedCompromises.size
             Text(
-                text = "Itens da Fatura (${items.size})",
+                text = "Itens da Fatura ($totalItems)",
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
             )
 
-            if (items.isEmpty()) {
+            if (items.isEmpty() && linkedCompromises.isEmpty()) {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -210,6 +265,35 @@ fun CreditCardDetailScreen(
                         .padding(horizontal = 16.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
+                    // Linked compromises (recurring bills)
+                    if (linkedCompromises.isNotEmpty()) {
+                        item {
+                            Text(
+                                text = "Contas Fixas Vinculadas",
+                                style = MaterialTheme.typography.labelMedium,
+                                color = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.padding(vertical = 4.dp)
+                            )
+                        }
+                        items(linkedCompromises) { compromise ->
+                            LinkedCompromiseRow(compromise = compromise)
+                        }
+                        item {
+                            HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+                        }
+                    }
+
+                    // Regular items
+                    if (items.isNotEmpty()) {
+                        item {
+                            Text(
+                                text = "Compras",
+                                style = MaterialTheme.typography.labelMedium,
+                                color = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.padding(vertical = 4.dp)
+                            )
+                        }
+                    }
                     items(items) { item ->
                         CreditCardItemRow(
                             item = item,
@@ -303,3 +387,50 @@ private fun CreditCardItemRow(
     }
 }
 
+@Composable
+private fun LinkedCompromiseRow(compromise: FinancialCompromise) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.secondaryContainer
+        )
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(12.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Repeat,
+                    contentDescription = "Recorrente",
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(20.dp)
+                )
+                Column {
+                    Text(
+                        text = compromise.name,
+                        style = MaterialTheme.typography.bodyLarge,
+                        fontWeight = FontWeight.Medium
+                    )
+                    Text(
+                        text = "Conta fixa recorrente",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.outline
+                    )
+                }
+            }
+            Text(
+                text = formatCurrency(compromise.amount),
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                color = Color(0xFFE91E63)
+            )
+        }
+    }
+}

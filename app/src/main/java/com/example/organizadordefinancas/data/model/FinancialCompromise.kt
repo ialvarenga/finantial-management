@@ -27,6 +27,7 @@ data class FinancialCompromise(
     val dueDay: Int, // Day of month when it's due (1-31)
     val category: CompromiseCategory = CompromiseCategory.OTHER,
     val isPaid: Boolean = false, // For current month
-    val isActive: Boolean = true // If the compromise is still active
+    val isActive: Boolean = true, // If the compromise is still active
+    val linkedCreditCardId: Long? = null // If linked to a credit card, it shows on the card bill
 )
 

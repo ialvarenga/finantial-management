@@ -17,8 +17,19 @@ class FinancialCompromiseViewModel(private val repository: FinancialCompromiseRe
         .map { it ?: 0.0 }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0.0)
 
+    // Total of compromises NOT linked to any credit card (to avoid double counting)
+    val totalNonLinkedCompromises: StateFlow<Double> = repository.getTotalNonLinkedCompromises()
+        .map { it ?: 0.0 }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0.0)
+
     private val _selectedCompromise = MutableStateFlow<FinancialCompromise?>(null)
     val selectedCompromise: StateFlow<FinancialCompromise?> = _selectedCompromise.asStateFlow()
+
+    fun getCompromisesByCardId(cardId: Long): Flow<List<FinancialCompromise>> =
+        repository.getCompromisesByCardId(cardId)
+
+    fun getTotalCompromisesByCardId(cardId: Long): Flow<Double> =
+        repository.getTotalCompromisesByCardId(cardId).map { it ?: 0.0 }
 
     fun selectCompromise(compromiseId: Long) {
         viewModelScope.launch {

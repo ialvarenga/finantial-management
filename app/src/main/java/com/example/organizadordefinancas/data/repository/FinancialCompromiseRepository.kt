@@ -14,8 +14,17 @@ class FinancialCompromiseRepository(private val compromiseDao: FinancialCompromi
     fun getCompromiseById(id: Long): Flow<FinancialCompromise?> =
         compromiseDao.getCompromiseById(id)
 
+    fun getCompromisesByCardId(cardId: Long): Flow<List<FinancialCompromise>> =
+        compromiseDao.getCompromisesByCardId(cardId)
+
     fun getTotalMonthlyCompromises(): Flow<Double?> =
         compromiseDao.getTotalMonthlyCompromises()
+
+    fun getTotalNonLinkedCompromises(): Flow<Double?> =
+        compromiseDao.getTotalNonLinkedCompromises()
+
+    fun getTotalCompromisesByCardId(cardId: Long): Flow<Double?> =
+        compromiseDao.getTotalCompromisesByCardId(cardId)
 
     suspend fun insertCompromise(compromise: FinancialCompromise): Long =
         compromiseDao.insertCompromise(compromise)

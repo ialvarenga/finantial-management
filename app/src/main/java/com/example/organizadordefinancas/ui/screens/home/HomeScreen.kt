@@ -38,10 +38,16 @@ fun HomeScreen(
     val creditCards by creditCardViewModel.allCreditCards.collectAsState()
     val allItems by creditCardViewModel.allItems.collectAsState()
     val compromises by compromiseViewModel.allCompromises.collectAsState()
-    val totalCompromises by compromiseViewModel.totalMonthlyCompromises.collectAsState()
+    val totalNonLinkedCompromises by compromiseViewModel.totalNonLinkedCompromises.collectAsState()
+    val totalAllCompromises by compromiseViewModel.totalMonthlyCompromises.collectAsState()
 
-    val totalCreditCardBill = allItems.sumOf { it.amount }
-    val totalExpenses = totalCreditCardBill + totalCompromises
+    // Credit card total includes linked compromises
+    val totalCreditCardItemsOnly = allItems.sumOf { it.amount }
+    val totalLinkedCompromises = totalAllCompromises - totalNonLinkedCompromises
+    val totalCreditCardBill = totalCreditCardItemsOnly + totalLinkedCompromises
+
+    // Total expenses = credit cards (with linked compromises) + non-linked compromises
+    val totalExpenses = totalCreditCardBill + totalNonLinkedCompromises
 
     val currentDate = LocalDate.now()
     val dateFormatter = DateTimeFormatter.ofPattern("MMMM 'de' yyyy", Locale("pt", "BR"))
@@ -96,7 +102,7 @@ fun HomeScreen(
 
             SummaryCard(
                 title = "Contas Fixas",
-                value = totalCompromises,
+                value = totalNonLinkedCompromises,
                 icon = Icons.Default.Receipt,
                 backgroundColor = Color(0xFFFF9800),
                 isNegative = true
