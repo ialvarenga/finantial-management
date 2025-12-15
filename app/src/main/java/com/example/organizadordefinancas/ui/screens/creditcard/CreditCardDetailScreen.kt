@@ -9,6 +9,7 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Upload
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -31,6 +32,7 @@ fun CreditCardDetailScreen(
     onNavigateBack: () -> Unit,
     onNavigateToAddItem: (Long) -> Unit,
     onNavigateToEditCard: (Long) -> Unit,
+    onNavigateToImport: (Long) -> Unit,
     modifier: Modifier = Modifier
 ) {
     LaunchedEffect(cardId) {
@@ -53,6 +55,9 @@ fun CreditCardDetailScreen(
                 },
                 actions = {
                     card?.let {
+                        IconButton(onClick = { onNavigateToImport(it.id) }) {
+                            Icon(Icons.Default.Upload, contentDescription = "Importar Extrato")
+                        }
                         IconButton(onClick = { onNavigateToEditCard(it.id) }) {
                             Icon(Icons.Default.Edit, contentDescription = "Editar")
                         }

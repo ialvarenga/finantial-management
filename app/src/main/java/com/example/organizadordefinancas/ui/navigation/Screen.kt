@@ -19,6 +19,9 @@ sealed class Screen(val route: String, val title: String, val icon: ImageVector?
     object AddCreditCardItem : Screen("add_credit_card_item/{cardId}", "Adicionar Item") {
         fun createRoute(cardId: Long) = "add_credit_card_item/$cardId"
     }
+    object ImportStatement : Screen("import_statement/{cardId}", "Importar Extrato") {
+        fun createRoute(cardId: Long) = "import_statement/$cardId"
+    }
     object Banks : Screen("banks", "Bancos", Icons.Default.AccountBalance)
     object AddEditBank : Screen("add_edit_bank?bankId={bankId}", "Banco") {
         fun createRoute(bankId: Long? = null) = if (bankId != null) "add_edit_bank?bankId=$bankId" else "add_edit_bank"
