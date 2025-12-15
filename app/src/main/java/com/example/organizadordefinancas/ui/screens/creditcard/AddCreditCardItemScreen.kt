@@ -164,16 +164,24 @@ fun AddCreditCardItemScreen(
 
             Button(
                 onClick = {
+                    val totalAmount = amount.toDoubleOrNull() ?: 0.0
+                    val numInstallments = installments.toIntOrNull()?.coerceAtLeast(1) ?: 1
+
                     val item = CreditCardItem(
                         cardId = cardId,
                         description = description,
-                        amount = amount.toDoubleOrNull() ?: 0.0,
+                        amount = totalAmount, // Total amount - will be divided in repository
                         purchaseDate = System.currentTimeMillis(),
-                        installments = installments.toIntOrNull()?.coerceAtLeast(1) ?: 1,
+                        installments = numInstallments,
                         currentInstallment = 1,
                         category = selectedCategory
                     )
-                    viewModel.insertItem(item)
+
+                    if (numInstallments > 1) {
+                        viewModel.insertItemWithInstallments(item)
+                    } else {
+                        viewModel.insertItem(item)
+                    }
                     onNavigateBack()
                 },
                 modifier = Modifier

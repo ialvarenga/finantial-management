@@ -31,6 +31,7 @@ fun CreditCardDetailScreen(
     viewModel: CreditCardViewModel,
     onNavigateBack: () -> Unit,
     onNavigateToAddItem: (Long) -> Unit,
+    onNavigateToEditItem: (Long) -> Unit,
     onNavigateToEditCard: (Long) -> Unit,
     onNavigateToImport: (Long) -> Unit,
     modifier: Modifier = Modifier
@@ -212,6 +213,7 @@ fun CreditCardDetailScreen(
                     items(items) { item ->
                         CreditCardItemRow(
                             item = item,
+                            onEdit = { onNavigateToEditItem(item.id) },
                             onDelete = { itemToDelete = item }
                         )
                     }
@@ -236,6 +238,7 @@ fun CreditCardDetailScreen(
 @Composable
 private fun CreditCardItemRow(
     item: CreditCardItem,
+    onEdit: () -> Unit,
     onDelete: () -> Unit
 ) {
     val dateFormat = SimpleDateFormat("dd/MM/yyyy", Locale("pt", "BR"))
@@ -279,6 +282,14 @@ private fun CreditCardItemRow(
                     fontWeight = FontWeight.Bold,
                     color = Color(0xFFE91E63)
                 )
+                IconButton(onClick = onEdit) {
+                    Icon(
+                        imageVector = Icons.Default.Edit,
+                        contentDescription = "Editar",
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
                 IconButton(onClick = onDelete) {
                     Icon(
                         imageVector = Icons.Default.Delete,

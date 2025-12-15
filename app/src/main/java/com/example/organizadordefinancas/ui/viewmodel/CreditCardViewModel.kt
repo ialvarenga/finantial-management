@@ -31,6 +31,8 @@ class CreditCardViewModel(private val repository: CreditCardRepository) : ViewMo
     private val _cardTotal = MutableStateFlow(0.0)
     val cardTotal: StateFlow<Double> = _cardTotal.asStateFlow()
 
+    fun getItemById(itemId: Long): Flow<CreditCardItem?> = repository.getItemById(itemId)
+
     fun selectCard(cardId: Long) {
         viewModelScope.launch {
             repository.getCreditCardById(cardId).collect { card ->
@@ -70,6 +72,12 @@ class CreditCardViewModel(private val repository: CreditCardRepository) : ViewMo
     fun insertItem(item: CreditCardItem) {
         viewModelScope.launch {
             repository.insertItem(item)
+        }
+    }
+
+    fun insertItemWithInstallments(item: CreditCardItem) {
+        viewModelScope.launch {
+            repository.insertItemWithInstallments(item)
         }
     }
 

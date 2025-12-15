@@ -20,6 +20,9 @@ sealed class Screen(val route: String, val title: String, val icon: ImageVector?
     object AddCreditCardItem : Screen("add_credit_card_item/{cardId}", "Adicionar Item") {
         fun createRoute(cardId: Long) = "add_credit_card_item/$cardId"
     }
+    object EditCreditCardItem : Screen("edit_credit_card_item/{itemId}", "Editar Item") {
+        fun createRoute(itemId: Long) = "edit_credit_card_item/$itemId"
+    }
     object ImportStatement : Screen("import_statement/{cardId}", "Importar Extrato") {
         fun createRoute(cardId: Long) = "import_statement/$cardId"
     }

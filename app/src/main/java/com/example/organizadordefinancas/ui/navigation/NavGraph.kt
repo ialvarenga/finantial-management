@@ -15,6 +15,7 @@ import com.example.organizadordefinancas.ui.screens.creditcard.AddCreditCardItem
 import com.example.organizadordefinancas.ui.screens.creditcard.AddEditCreditCardScreen
 import com.example.organizadordefinancas.ui.screens.creditcard.CreditCardDetailScreen
 import com.example.organizadordefinancas.ui.screens.creditcard.CreditCardListScreen
+import com.example.organizadordefinancas.ui.screens.creditcard.EditCreditCardItemScreen
 import com.example.organizadordefinancas.ui.screens.creditcard.ImportStatementScreen
 import com.example.organizadordefinancas.ui.screens.home.HomeScreen
 import com.example.organizadordefinancas.ui.screens.income.AddEditIncomeScreen
@@ -72,6 +73,9 @@ fun FinanceNavHost(
                 onNavigateToAddItem = { id ->
                     navController.navigate(Screen.AddCreditCardItem.createRoute(id))
                 },
+                onNavigateToEditItem = { itemId ->
+                    navController.navigate(Screen.EditCreditCardItem.createRoute(itemId))
+                },
                 onNavigateToEditCard = { id ->
                     navController.navigate(Screen.AddEditCreditCard.createRoute(id))
                 },
@@ -105,6 +109,18 @@ fun FinanceNavHost(
             val cardId = backStackEntry.arguments?.getLong("cardId") ?: 0L
             AddCreditCardItemScreen(
                 cardId = cardId,
+                viewModel = creditCardViewModel,
+                onNavigateBack = { navController.popBackStack() }
+            )
+        }
+
+        composable(
+            route = Screen.EditCreditCardItem.route,
+            arguments = listOf(navArgument("itemId") { type = NavType.LongType })
+        ) { backStackEntry ->
+            val itemId = backStackEntry.arguments?.getLong("itemId") ?: 0L
+            EditCreditCardItemScreen(
+                itemId = itemId,
                 viewModel = creditCardViewModel,
                 onNavigateBack = { navController.popBackStack() }
             )
