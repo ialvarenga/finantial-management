@@ -44,7 +44,8 @@ fun FinanceNavHost(
             HomeScreen(
                 creditCardViewModel = creditCardViewModel,
                 bankViewModel = bankViewModel,
-                compromiseViewModel = compromiseViewModel
+                compromiseViewModel = compromiseViewModel,
+                incomeViewModel = incomeViewModel
             )
         }
 

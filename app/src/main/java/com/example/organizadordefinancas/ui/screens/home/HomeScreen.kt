@@ -8,6 +8,7 @@ import androidx.compose.material.icons.filled.AccountBalance
 import androidx.compose.material.icons.filled.CreditCard
 import androidx.compose.material.icons.filled.Receipt
 import androidx.compose.material.icons.filled.TrendingDown
+import androidx.compose.material.icons.filled.TrendingUp
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -21,6 +22,7 @@ import com.example.organizadordefinancas.ui.components.formatCurrency
 import com.example.organizadordefinancas.ui.viewmodel.BankViewModel
 import com.example.organizadordefinancas.ui.viewmodel.CreditCardViewModel
 import com.example.organizadordefinancas.ui.viewmodel.FinancialCompromiseViewModel
+import com.example.organizadordefinancas.ui.viewmodel.IncomeViewModel
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.util.Locale
@@ -31,6 +33,7 @@ fun HomeScreen(
     creditCardViewModel: CreditCardViewModel,
     bankViewModel: BankViewModel,
     compromiseViewModel: FinancialCompromiseViewModel,
+    incomeViewModel: IncomeViewModel,
     modifier: Modifier = Modifier
 ) {
     val banks by bankViewModel.allBanks.collectAsState()
@@ -38,16 +41,15 @@ fun HomeScreen(
     val creditCards by creditCardViewModel.allCreditCards.collectAsState()
     val allItems by creditCardViewModel.allItems.collectAsState()
     val compromises by compromiseViewModel.allCompromises.collectAsState()
-    val totalNonLinkedCompromises by compromiseViewModel.totalNonLinkedCompromises.collectAsState()
     val totalAllCompromises by compromiseViewModel.totalMonthlyCompromises.collectAsState()
+    val incomes by incomeViewModel.allIncomes.collectAsState()
+    val totalMonthlyIncome by incomeViewModel.totalMonthlyIncome.collectAsState()
 
-    // Credit card total includes linked compromises
+    // Credit card items only (purchases)
     val totalCreditCardItemsOnly = allItems.sumOf { it.amount }
-    val totalLinkedCompromises = totalAllCompromises - totalNonLinkedCompromises
-    val totalCreditCardBill = totalCreditCardItemsOnly + totalLinkedCompromises
 
-    // Total expenses = credit cards (with linked compromises) + non-linked compromises
-    val totalExpenses = totalCreditCardBill + totalNonLinkedCompromises
+    // Total expenses = credit card items + ALL fixed compromises
+    val totalExpenses = totalCreditCardItemsOnly + totalAllCompromises
 
     val currentDate = LocalDate.now()
     val dateFormatter = DateTimeFormatter.ofPattern("MMMM 'de' yyyy", Locale("pt", "BR"))
@@ -93,8 +95,15 @@ fun HomeScreen(
             )
 
             SummaryCard(
+                title = "Renda Mensal",
+                value = totalMonthlyIncome,
+                icon = Icons.Default.TrendingUp,
+                backgroundColor = Color(0xFF2196F3)
+            )
+
+            SummaryCard(
                 title = "Fatura dos Cartões",
-                value = totalCreditCardBill,
+                value = totalCreditCardItemsOnly,
                 icon = Icons.Default.CreditCard,
                 backgroundColor = Color(0xFFE91E63),
                 isNegative = true
@@ -102,7 +111,7 @@ fun HomeScreen(
 
             SummaryCard(
                 title = "Contas Fixas",
-                value = totalNonLinkedCompromises,
+                value = totalAllCompromises,
                 icon = Icons.Default.Receipt,
                 backgroundColor = Color(0xFFFF9800),
                 isNegative = true
@@ -136,6 +145,7 @@ fun HomeScreen(
                     StatRow("Cartões de crédito", creditCards.size.toString())
                     StatRow("Contas fixas", compromises.size.toString())
                     StatRow("Itens na fatura", allItems.size.toString())
+                    StatRow("Fontes de renda", incomes.size.toString())
 
                     Divider(modifier = Modifier.padding(vertical = 8.dp))
 
@@ -144,6 +154,14 @@ fun HomeScreen(
                         label = "Saldo disponível após despesas",
                         value = formatCurrency(availableBalance),
                         valueColor = if (availableBalance >= 0) Color(0xFF4CAF50) else Color(0xFFF44336)
+                    )
+
+                    // Money left after paying all debts (income - expenses)
+                    val remainingAfterDebts = totalMonthlyIncome - totalExpenses
+                    StatRow(
+                        label = "Sobra do próximo mês",
+                        value = formatCurrency(remainingAfterDebts),
+                        valueColor = if (remainingAfterDebts >= 0) Color(0xFF4CAF50) else Color(0xFFF44336)
                     )
                 }
             }
