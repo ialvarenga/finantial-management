@@ -46,6 +46,7 @@ fun AddEditBankScreen(
 ) {
     var name by remember { mutableStateOf("") }
     var balance by remember { mutableStateOf("") }
+    var savingsBalance by remember { mutableStateOf("") }
     var selectedAccountType by remember { mutableStateOf(AccountType.CHECKING) }
     var selectedColor by remember { mutableStateOf(bankColors[0]) }
     var expandedAccountType by remember { mutableStateOf(false) }
@@ -66,6 +67,7 @@ fun AddEditBankScreen(
             if (bankId != null) {
                 name = bank.name
                 balance = bank.balance.toString()
+                savingsBalance = if (bank.savingsBalance > 0) bank.savingsBalance.toString() else ""
                 selectedAccountType = bank.accountType
                 selectedColor = bank.color
                 isLoading = false
@@ -129,6 +131,20 @@ fun AddEditBankScreen(
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                     prefix = { Text("R$ ") },
                     supportingText = { Text("Use '-' para saldo negativo") }
+                )
+
+                OutlinedTextField(
+                    value = savingsBalance,
+                    onValueChange = {
+                        savingsBalance = it.filter { c -> c.isDigit() || c == '.' }
+                    },
+                    label = { Text("Reserva de Emergência") },
+                    placeholder = { Text("Ex: 5000.00") },
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                    prefix = { Text("R$ ") },
+                    supportingText = { Text("Dinheiro que você não vai usar no dia a dia") }
                 )
 
                 ExposedDropdownMenuBox(
@@ -205,6 +221,7 @@ fun AddEditBankScreen(
                             id = bankId ?: 0,
                             name = name,
                             balance = balance.toDoubleOrNull() ?: 0.0,
+                            savingsBalance = savingsBalance.toDoubleOrNull() ?: 0.0,
                             accountType = selectedAccountType,
                             color = selectedColor
                         )

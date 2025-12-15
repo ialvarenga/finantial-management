@@ -15,6 +15,9 @@ interface BankDao {
     @Query("SELECT SUM(balance) FROM banks")
     fun getTotalBalance(): Flow<Double?>
 
+    @Query("SELECT SUM(savingsBalance) FROM banks")
+    fun getTotalSavingsBalance(): Flow<Double?>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertBank(bank: Bank): Long
 

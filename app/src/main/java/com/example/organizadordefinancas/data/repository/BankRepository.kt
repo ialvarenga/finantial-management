@@ -11,6 +11,8 @@ class BankRepository(private val bankDao: BankDao) {
 
     fun getTotalBalance(): Flow<Double?> = bankDao.getTotalBalance()
 
+    fun getTotalSavingsBalance(): Flow<Double?> = bankDao.getTotalSavingsBalance()
+
     suspend fun insertBank(bank: Bank): Long = bankDao.insertBank(bank)
 
     suspend fun updateBank(bank: Bank) = bankDao.updateBank(bank)

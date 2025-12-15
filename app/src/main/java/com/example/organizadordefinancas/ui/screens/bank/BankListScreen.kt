@@ -32,6 +32,7 @@ fun BankListScreen(
 ) {
     val banks by viewModel.allBanks.collectAsState()
     val totalBalance by viewModel.totalBalance.collectAsState()
+    val totalSavingsBalance by viewModel.totalSavingsBalance.collectAsState()
     var bankToDelete by remember { mutableStateOf<Bank?>(null) }
 
     Scaffold(
@@ -80,6 +81,20 @@ fun BankListScreen(
                         fontWeight = FontWeight.Bold,
                         color = Color.White
                     )
+                    if (totalSavingsBalance > 0) {
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = "Reserva de Emergência",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = Color.White.copy(alpha = 0.8f)
+                        )
+                        Text(
+                            text = formatCurrency(totalSavingsBalance),
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White
+                        )
+                    }
                 }
             }
 
@@ -185,6 +200,13 @@ private fun BankItem(
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.outline
                     )
+                    if (bank.savingsBalance > 0) {
+                        Text(
+                            text = "Reserva: ${formatCurrency(bank.savingsBalance)}",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = Color(0xFF2196F3)
+                        )
+                    }
                 }
 
                 Row(

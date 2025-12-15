@@ -16,6 +16,7 @@ data class Bank(
     val id: Long = 0,
     val name: String,
     val balance: Double,
+    val savingsBalance: Double = 0.0, // Emergency savings - not touched
     val accountType: AccountType = AccountType.CHECKING,
     val color: Long = 0xFF03DAC5 // Default teal color
 )

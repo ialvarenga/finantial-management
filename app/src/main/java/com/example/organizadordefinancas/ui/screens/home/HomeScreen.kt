@@ -7,6 +7,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountBalance
 import androidx.compose.material.icons.filled.CreditCard
 import androidx.compose.material.icons.filled.Receipt
+import androidx.compose.material.icons.filled.Savings
 import androidx.compose.material.icons.filled.TrendingDown
 import androidx.compose.material.icons.filled.TrendingUp
 import androidx.compose.material3.*
@@ -38,6 +39,7 @@ fun HomeScreen(
 ) {
     val banks by bankViewModel.allBanks.collectAsState()
     val totalBalance by bankViewModel.totalBalance.collectAsState()
+    val totalSavingsBalance by bankViewModel.totalSavingsBalance.collectAsState()
     val creditCards by creditCardViewModel.allCreditCards.collectAsState()
     val allItems by creditCardViewModel.allItems.collectAsState()
     val compromises by compromiseViewModel.allCompromises.collectAsState()
@@ -93,6 +95,15 @@ fun HomeScreen(
                 icon = Icons.Default.AccountBalance,
                 backgroundColor = Color(0xFF4CAF50)
             )
+
+            if (totalSavingsBalance > 0) {
+                SummaryCard(
+                    title = "Reserva de Emergência",
+                    value = totalSavingsBalance,
+                    icon = Icons.Default.Savings,
+                    backgroundColor = Color(0xFF673AB7)
+                )
+            }
 
             SummaryCard(
                 title = "Renda Mensal",
@@ -163,6 +174,14 @@ fun HomeScreen(
                         value = formatCurrency(remainingAfterDebts),
                         valueColor = if (remainingAfterDebts >= 0) Color(0xFF4CAF50) else Color(0xFFF44336)
                     )
+
+                    if (totalSavingsBalance > 0) {
+                        StatRow(
+                            label = "Reserva de emergência",
+                            value = formatCurrency(totalSavingsBalance),
+                            valueColor = Color(0xFF673AB7)
+                        )
+                    }
                 }
             }
 

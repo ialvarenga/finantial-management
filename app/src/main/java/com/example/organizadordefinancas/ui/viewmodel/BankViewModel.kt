@@ -17,6 +17,10 @@ class BankViewModel(private val repository: BankRepository) : ViewModel() {
         .map { it ?: 0.0 }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0.0)
 
+    val totalSavingsBalance: StateFlow<Double> = repository.getTotalSavingsBalance()
+        .map { it ?: 0.0 }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0.0)
+
     private val _selectedBank = MutableStateFlow<Bank?>(null)
     val selectedBank: StateFlow<Bank?> = _selectedBank.asStateFlow()
 
