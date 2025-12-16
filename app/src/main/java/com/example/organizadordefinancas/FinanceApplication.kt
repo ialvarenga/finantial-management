@@ -13,6 +13,10 @@ import com.example.organizadordefinancas.data.repository.CreditCardRepository
 import com.example.organizadordefinancas.data.repository.FinancialCompromiseRepository
 import com.example.organizadordefinancas.data.repository.IncomeRepository
 import com.example.organizadordefinancas.data.repository.TransactionRepository
+import com.example.organizadordefinancas.service.business.BillGenerationService
+import com.example.organizadordefinancas.service.business.ExpenseCalculationService
+import com.example.organizadordefinancas.service.business.InstallmentService
+import com.example.organizadordefinancas.service.business.TransferService
 
 class FinanceApplication : Application() {
     val database by lazy { AppDatabase.getDatabase(this) }
@@ -33,6 +37,24 @@ class FinanceApplication : Application() {
 
     val transactionRepository by lazy {
         TransactionRepository(database.transactionDao(), database.balanceDao(), database.billDao())
+    }
+
+    // ==================== Business Logic Services ====================
+
+    val installmentService by lazy {
+        InstallmentService(transactionRepository, billRepository)
+    }
+
+    val billGenerationService by lazy {
+        BillGenerationService(billRepository, database.creditCardDao())
+    }
+
+    val transferService by lazy {
+        TransferService(balanceRepository)
+    }
+
+    val expenseCalculationService by lazy {
+        ExpenseCalculationService(transactionRepository, balanceRepository)
     }
 
     // ==================== Legacy Repositories ====================
