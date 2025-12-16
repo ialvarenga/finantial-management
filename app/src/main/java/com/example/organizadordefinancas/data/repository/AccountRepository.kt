@@ -214,5 +214,11 @@ class AccountRepository(
      */
     suspend fun setAccountActive(id: Long, isActive: Boolean) =
         accountDao.setAccountActive(id, isActive)
+
+    /**
+     * Deactivate an account (soft delete)
+     */
+    suspend fun deactivateAccount(id: Long) =
+        accountDao.setAccountActive(id, false)
 }
 

@@ -558,6 +558,12 @@ class TransactionRepository(
         transactionDao.updateTransactionStatus(parentTransactionId, TransactionStatus.CANCELLED)
     }
 
+    /**
+     * Cancel an installment purchase (alias for cancelRemainingInstallments)
+     */
+    suspend fun cancelInstallment(parentTransactionId: Long) =
+        cancelRemainingInstallments(parentTransactionId)
+
     // ==================== Transfer Operations ====================
 
     /**

@@ -2,16 +2,40 @@ package com.example.organizadordefinancas
 
 import android.app.Application
 import com.example.organizadordefinancas.data.database.AppDatabase
+import com.example.organizadordefinancas.data.repository.AccountRepository
 import com.example.organizadordefinancas.data.repository.AnalyticsRepository
+import com.example.organizadordefinancas.data.repository.BalanceRepository
 import com.example.organizadordefinancas.data.repository.BankRepository
+import com.example.organizadordefinancas.data.repository.BillRepository
 import com.example.organizadordefinancas.data.repository.CapturedNotificationRepository
 import com.example.organizadordefinancas.data.repository.CompromiseOccurrenceRepository
 import com.example.organizadordefinancas.data.repository.CreditCardRepository
 import com.example.organizadordefinancas.data.repository.FinancialCompromiseRepository
 import com.example.organizadordefinancas.data.repository.IncomeRepository
+import com.example.organizadordefinancas.data.repository.TransactionRepository
 
 class FinanceApplication : Application() {
     val database by lazy { AppDatabase.getDatabase(this) }
+
+    // ==================== New Data Model Repositories ====================
+
+    val accountRepository by lazy {
+        AccountRepository(database.accountDao(), database.balanceDao())
+    }
+
+    val balanceRepository by lazy {
+        BalanceRepository(database.balanceDao(), database.transactionDao())
+    }
+
+    val billRepository by lazy {
+        BillRepository(database.billDao(), database.creditCardDao(), database.transactionDao())
+    }
+
+    val transactionRepository by lazy {
+        TransactionRepository(database.transactionDao(), database.balanceDao(), database.billDao())
+    }
+
+    // ==================== Legacy Repositories ====================
 
     val creditCardRepository by lazy {
         CreditCardRepository(database.creditCardDao(), database.creditCardItemDao())

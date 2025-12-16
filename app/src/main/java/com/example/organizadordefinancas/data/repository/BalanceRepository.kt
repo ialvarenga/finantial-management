@@ -154,6 +154,12 @@ class BalanceRepository(
     suspend fun setBalanceActive(id: Long, isActive: Boolean) =
         balanceDao.setBalanceActive(id, isActive)
 
+    /**
+     * Deactivate a balance (soft delete)
+     */
+    suspend fun deactivateBalance(id: Long) =
+        balanceDao.setBalanceActive(id, false)
+
     // ==================== Balance Adjustments ====================
 
     /**
