@@ -10,6 +10,9 @@ interface TransactionDao {
     @Query("SELECT * FROM transactions ORDER BY date DESC")
     fun getAllTransactions(): Flow<List<Transaction>>
 
+    @Query("SELECT * FROM transactions ORDER BY date DESC")
+    suspend fun getAllTransactionsSync(): List<Transaction>
+
     @Query("SELECT * FROM transactions WHERE id = :id")
     fun getTransactionById(id: Long): Flow<Transaction?>
 
@@ -24,6 +27,9 @@ interface TransactionDao {
     @Query("SELECT * FROM transactions WHERE bill_id = :billId ORDER BY date DESC")
     fun getTransactionsByBillId(billId: Long): Flow<List<Transaction>>
 
+    @Query("SELECT * FROM transactions WHERE bill_id = :billId ORDER BY date DESC")
+    suspend fun getTransactionsByBillIdSync(billId: Long): List<Transaction>
+
     // Get transactions by bill ID (excluding installment parents)
     @Query("SELECT * FROM transactions WHERE bill_id = :billId AND is_installment_parent = 0 ORDER BY date DESC")
     fun getTransactionsByBillIdExcludingParents(billId: Long): Flow<List<Transaction>>
@@ -31,6 +37,9 @@ interface TransactionDao {
     // Get transactions excluding installment parents (CRITICAL for expense calculations)
     @Query("SELECT * FROM transactions WHERE is_installment_parent = 0 ORDER BY date DESC")
     fun getTransactionsExcludingParents(): Flow<List<Transaction>>
+
+    @Query("SELECT * FROM transactions WHERE is_installment_parent = 0 ORDER BY date DESC")
+    suspend fun getTransactionsExcludingParentsSync(): List<Transaction>
 
     // Get transactions by status
     @Query("SELECT * FROM transactions WHERE status = :status ORDER BY date DESC")
