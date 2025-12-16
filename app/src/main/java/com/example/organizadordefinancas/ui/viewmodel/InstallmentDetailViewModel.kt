@@ -20,6 +20,7 @@ import java.util.Locale
 data class InstallmentScheduleItem(
     val transaction: Transaction,
     val installmentNumber: Int,
+    val totalInstallments: Int,
     val formattedDate: String, // e.g., "Jan 2024"
     val formattedAmount: String, // e.g., "R$ 100.00"
     val status: String,
@@ -112,6 +113,7 @@ class InstallmentDetailViewModel(
         children: List<Transaction>
     ): InstallmentDetailUiState {
         val summary = transactionRepository.getInstallmentSummary(parent.id)
+        val totalInstallments = parent.totalInstallments ?: summary?.totalInstallments ?: children.size
 
         val scheduleItems = children
             .sortedBy { it.installmentNumber }
@@ -130,6 +132,7 @@ class InstallmentDetailViewModel(
                 InstallmentScheduleItem(
                     transaction = child,
                     installmentNumber = child.installmentNumber ?: 0,
+                    totalInstallments = totalInstallments,
                     formattedDate = monthYearFormatter.format(Date(child.date)),
                     formattedAmount = "R$ %.2f".format(child.amount),
                     status = child.status,

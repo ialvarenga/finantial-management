@@ -8,6 +8,8 @@ import androidx.compose.material.icons.filled.CreditCard
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Receipt
+import androidx.compose.material.icons.filled.Repeat
+import androidx.compose.material.icons.filled.Savings
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.ui.graphics.vector.ImageVector
 
@@ -46,14 +48,61 @@ sealed class Screen(val route: String, val title: String, val icon: ImageVector?
     // Notification screens
     object PendingNotifications : Screen("pending_notifications", "Transações Pendentes", Icons.Default.Notifications)
     object NotificationSettings : Screen("notification_settings", "Configurações de Notificações", Icons.Default.Settings)
+
+    // ==================== New Screens (Phase 5) ====================
+
+    // Account screens
+    object Accounts : Screen("accounts", "Contas", Icons.Default.AccountBalance)
+    object AccountDetail : Screen("account_detail/{accountId}", "Detalhes da Conta") {
+        fun createRoute(accountId: Long) = "account_detail/$accountId"
+    }
+    object AddEditAccount : Screen("add_edit_account?accountId={accountId}", "Conta") {
+        fun createRoute(accountId: Long? = null) = if (accountId != null) "add_edit_account?accountId=$accountId" else "add_edit_account"
+    }
+
+    // Balance screens
+    object BalanceDetail : Screen("balance_detail/{balanceId}", "Detalhes do Saldo") {
+        fun createRoute(balanceId: Long) = "balance_detail/$balanceId"
+    }
+    object AddPool : Screen("add_pool/{accountId}", "Nova Caixinha") {
+        fun createRoute(accountId: Long) = "add_pool/$accountId"
+    }
+
+    // Transaction screens
+    object Transactions : Screen("transactions", "Transações", Icons.Default.Receipt)
+    object TransactionForm : Screen("transaction_form?transactionId={transactionId}", "Transação") {
+        fun createRoute(transactionId: Long? = null) = if (transactionId != null) "transaction_form?transactionId=$transactionId" else "transaction_form"
+    }
+    object TransactionDetail : Screen("transaction_detail/{transactionId}", "Detalhes da Transação") {
+        fun createRoute(transactionId: Long) = "transaction_detail/$transactionId"
+    }
+
+    // Bill screens
+    object Bills : Screen("bills", "Faturas", Icons.Default.Receipt)
+    object BillDetail : Screen("bill_detail/{billId}", "Detalhes da Fatura") {
+        fun createRoute(billId: Long) = "bill_detail/$billId"
+    }
+    object BillPayment : Screen("bill_payment/{billId}", "Pagar Fatura") {
+        fun createRoute(billId: Long) = "bill_payment/$billId"
+    }
+
+    // Installment screens
+    object Installments : Screen("installments", "Parcelamentos", Icons.Default.Repeat)
+    object InstallmentDetail : Screen("installment_detail/{parentTransactionId}", "Detalhes do Parcelamento") {
+        fun createRoute(parentTransactionId: Long) = "installment_detail/$parentTransactionId"
+    }
+
+    // Transfer screen
+    object Transfer : Screen("transfer?fromBalanceId={fromBalanceId}", "Transferir") {
+        fun createRoute(fromBalanceId: Long? = null) = if (fromBalanceId != null) "transfer?fromBalanceId=$fromBalanceId" else "transfer"
+    }
 }
 
 val bottomNavItems = listOf(
     Screen.Home,
+    Screen.Accounts,
     Screen.CreditCards,
-    Screen.Banks,
-    Screen.Analytics,
-    Screen.Compromises,
-    Screen.Incomes
+    Screen.Transactions,
+    Screen.Analytics
 )
 

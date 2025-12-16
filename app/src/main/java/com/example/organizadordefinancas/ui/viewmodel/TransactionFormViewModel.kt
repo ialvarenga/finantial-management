@@ -213,6 +213,38 @@ class TransactionFormViewModel(
     }
 
     /**
+     * Select a balance for the transaction
+     */
+    fun selectBalance(balanceId: Long) {
+        _uiState.update { state ->
+            state.copy(
+                formData = state.formData.copy(
+                    balanceId = balanceId,
+                    billId = null,
+                    creditCardId = null
+                ),
+                validationErrors = state.validationErrors - "source"
+            )
+        }
+    }
+
+    /**
+     * Select a bill for the transaction
+     */
+    fun selectBill(billId: Long, creditCardId: Long) {
+        _uiState.update { state ->
+            state.copy(
+                formData = state.formData.copy(
+                    balanceId = null,
+                    billId = billId,
+                    creditCardId = creditCardId
+                ),
+                validationErrors = state.validationErrors - "source"
+            )
+        }
+    }
+
+    /**
      * Update the bill ID
      */
     fun updateBillId(billId: Long?) {
@@ -357,6 +389,12 @@ class TransactionFormViewModel(
     }
 
     // ==================== Save Transaction ====================
+
+    /**
+     * Save the transaction (create or update)
+     * This is the main entry point for saving - can be called as save() or saveTransaction()
+     */
+    fun saveTransaction() = save()
 
     /**
      * Save the transaction (create or update)
