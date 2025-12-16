@@ -8,6 +8,9 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.example.organizadordefinancas.ui.screens.analytics.AnalyticsScreen
+import com.example.organizadordefinancas.ui.screens.account.AccountDetailScreen
+import com.example.organizadordefinancas.ui.screens.account.AccountListScreen
+import com.example.organizadordefinancas.ui.screens.account.AddEditAccountScreen
 import com.example.organizadordefinancas.ui.screens.bank.AddEditBankScreen
 import com.example.organizadordefinancas.ui.screens.bank.BankListScreen
 import com.example.organizadordefinancas.ui.screens.compromise.AddEditCompromiseScreen
@@ -24,6 +27,8 @@ import com.example.organizadordefinancas.ui.screens.income.IncomeListScreen
 import com.example.organizadordefinancas.ui.screens.notification.NotificationSettingsScreen
 import com.example.organizadordefinancas.ui.screens.notification.PendingNotificationsScreen
 import com.example.organizadordefinancas.ui.viewmodel.AnalyticsViewModel
+import com.example.organizadordefinancas.ui.viewmodel.AccountDetailViewModel
+import com.example.organizadordefinancas.ui.viewmodel.AccountListViewModel
 import com.example.organizadordefinancas.ui.viewmodel.BankViewModel
 import com.example.organizadordefinancas.ui.viewmodel.CreditCardViewModel
 import com.example.organizadordefinancas.ui.viewmodel.FinancialCompromiseViewModel
@@ -39,6 +44,8 @@ fun FinanceNavHost(
     incomeViewModel: IncomeViewModel,
     notificationViewModel: NotificationViewModel,
     analyticsViewModel: AnalyticsViewModel,
+    accountListViewModel: AccountListViewModel,
+    accountDetailViewModel: AccountDetailViewModel,
     modifier: Modifier = Modifier
 ) {
     NavHost(
@@ -240,6 +247,60 @@ fun FinanceNavHost(
         // Analytics
         composable(Screen.Analytics.route) {
             AnalyticsScreen(viewModel = analyticsViewModel)
+        }
+
+        // Accounts
+        composable(Screen.Accounts.route) {
+            AccountListScreen(
+                viewModel = accountListViewModel,
+                onNavigateToDetail = { accountId ->
+                    navController.navigate(Screen.AccountDetail.createRoute(accountId))
+                },
+                onNavigateToAddEdit = { accountId ->
+                    navController.navigate(Screen.AddEditAccount.createRoute(accountId))
+                }
+            )
+        }
+
+        composable(
+            route = Screen.AccountDetail.route,
+            arguments = listOf(navArgument("accountId") { type = NavType.LongType })
+        ) { backStackEntry ->
+            val accountId = backStackEntry.arguments?.getLong("accountId") ?: 0L
+            AccountDetailScreen(
+                accountId = accountId,
+                viewModel = accountDetailViewModel,
+                onNavigateBack = { navController.popBackStack() },
+                onNavigateToPool = { poolId ->
+                    navController.navigate(Screen.BalanceDetail.createRoute(poolId))
+                },
+                onNavigateToTransaction = { transactionId ->
+                    navController.navigate(Screen.TransactionDetail.createRoute(transactionId))
+                },
+                onNavigateToTransfer = { balanceId ->
+                    navController.navigate(Screen.Transfer.createRoute(balanceId))
+                },
+                onNavigateToAddPool = {
+                    navController.navigate(Screen.AddPool.createRoute(accountId))
+                }
+            )
+        }
+
+        composable(
+            route = Screen.AddEditAccount.route,
+            arguments = listOf(
+                navArgument("accountId") {
+                    type = NavType.LongType
+                    defaultValue = -1L
+                }
+            )
+        ) { backStackEntry ->
+            val accountId = backStackEntry.arguments?.getLong("accountId")?.takeIf { it != -1L }
+            AddEditAccountScreen(
+                accountId = accountId,
+                viewModel = accountListViewModel,
+                onNavigateBack = { navController.popBackStack() }
+            )
         }
 
         // Notification screens

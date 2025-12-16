@@ -19,6 +19,10 @@ import com.example.organizadordefinancas.ui.navigation.FinanceNavHost
 import com.example.organizadordefinancas.ui.navigation.bottomNavItems
 import com.example.organizadordefinancas.ui.theme.OrganizadorDeFinancasTheme
 import com.example.organizadordefinancas.ui.viewmodel.*
+import com.example.organizadordefinancas.ui.viewmodel.AccountListViewModel
+import com.example.organizadordefinancas.ui.viewmodel.AccountListViewModelFactory
+import com.example.organizadordefinancas.ui.viewmodel.AccountDetailViewModel
+import com.example.organizadordefinancas.ui.viewmodel.AccountDetailViewModelFactory
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -64,6 +68,16 @@ fun FinanceApp(application: FinanceApplication) {
     val analyticsViewModel: AnalyticsViewModel = viewModel(
         factory = AnalyticsViewModelFactory(application.analyticsRepository)
     )
+    val accountListViewModel: AccountListViewModel = viewModel(
+        factory = AccountListViewModelFactory(application.accountRepository)
+    )
+    val accountDetailViewModel: AccountDetailViewModel = viewModel(
+        factory = AccountDetailViewModelFactory(
+            application.accountRepository,
+            application.balanceRepository,
+            application.transactionRepository
+        )
+    )
 
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
@@ -108,6 +122,8 @@ fun FinanceApp(application: FinanceApplication) {
                 incomeViewModel = incomeViewModel,
                 notificationViewModel = notificationViewModel,
                 analyticsViewModel = analyticsViewModel,
+                accountListViewModel = accountListViewModel,
+                accountDetailViewModel = accountDetailViewModel,
                 modifier = Modifier.padding(innerPadding)
             )
         }
