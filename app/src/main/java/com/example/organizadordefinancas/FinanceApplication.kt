@@ -17,9 +17,17 @@ import com.example.organizadordefinancas.service.business.BillGenerationService
 import com.example.organizadordefinancas.service.business.ExpenseCalculationService
 import com.example.organizadordefinancas.service.business.InstallmentService
 import com.example.organizadordefinancas.service.business.TransferService
+import com.example.organizadordefinancas.worker.WorkManagerScheduler
 
 class FinanceApplication : Application() {
     val database by lazy { AppDatabase.getDatabase(this) }
+
+    override fun onCreate() {
+        super.onCreate()
+
+        // Schedule background workers for bill generation and overdue checks
+        WorkManagerScheduler.scheduleAllWork(this)
+    }
 
     // ==================== New Data Model Repositories ====================
 
