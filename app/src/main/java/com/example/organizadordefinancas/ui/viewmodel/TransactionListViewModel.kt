@@ -211,6 +211,13 @@ class TransactionListViewModel(
         _filter.value = TransactionFilter()
     }
 
+    /**
+     * Set complete filter object
+     */
+    fun setFilter(filter: TransactionFilter) {
+        _filter.value = filter
+    }
+
     // ==================== Transaction Actions ====================
 
     /**
