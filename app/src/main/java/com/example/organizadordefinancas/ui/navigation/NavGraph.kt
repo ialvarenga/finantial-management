@@ -26,6 +26,7 @@ import com.example.organizadordefinancas.ui.screens.income.AddEditIncomeScreen
 import com.example.organizadordefinancas.ui.screens.income.IncomeListScreen
 import com.example.organizadordefinancas.ui.screens.notification.NotificationSettingsScreen
 import com.example.organizadordefinancas.ui.screens.notification.PendingNotificationsScreen
+import com.example.organizadordefinancas.ui.screens.transaction.TransactionListScreen
 import com.example.organizadordefinancas.ui.viewmodel.AnalyticsViewModel
 import com.example.organizadordefinancas.ui.viewmodel.AccountDetailViewModel
 import com.example.organizadordefinancas.ui.viewmodel.AccountListViewModel
@@ -34,6 +35,7 @@ import com.example.organizadordefinancas.ui.viewmodel.CreditCardViewModel
 import com.example.organizadordefinancas.ui.viewmodel.FinancialCompromiseViewModel
 import com.example.organizadordefinancas.ui.viewmodel.IncomeViewModel
 import com.example.organizadordefinancas.ui.viewmodel.NotificationViewModel
+import com.example.organizadordefinancas.ui.viewmodel.TransactionListViewModel
 
 @Composable
 fun FinanceNavHost(
@@ -46,6 +48,7 @@ fun FinanceNavHost(
     analyticsViewModel: AnalyticsViewModel,
     accountListViewModel: AccountListViewModel,
     accountDetailViewModel: AccountDetailViewModel,
+    transactionListViewModel: TransactionListViewModel,
     modifier: Modifier = Modifier
 ) {
     NavHost(
@@ -300,6 +303,19 @@ fun FinanceNavHost(
                 accountId = accountId,
                 viewModel = accountListViewModel,
                 onNavigateBack = { navController.popBackStack() }
+            )
+        }
+
+        // Transactions
+        composable(Screen.Transactions.route) {
+            TransactionListScreen(
+                viewModel = transactionListViewModel,
+                onNavigateToDetail = { transactionId ->
+                    navController.navigate(Screen.TransactionDetail.createRoute(transactionId))
+                },
+                onNavigateToAddTransaction = {
+                    navController.navigate(Screen.TransactionForm.createRoute(null))
+                }
             )
         }
 
